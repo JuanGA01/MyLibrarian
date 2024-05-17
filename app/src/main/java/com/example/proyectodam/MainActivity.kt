@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
@@ -25,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,7 +70,14 @@ fun TabScreen() {
 
     val tabs = listOf("Mis Libros", "Libros Prestados", "Configuración")
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.weight(1.0f)) {
+            when (tabIndex) {
+                0 -> HomeScreen()
+                1 -> LibrosPrestados()
+                2 -> SettingsScreen()
+            }
+        }
         TabRow(selectedTabIndex = tabIndex) {
             tabs.forEachIndexed { index, title ->
                 Tab(text = { Text(title) },
@@ -84,11 +93,6 @@ fun TabScreen() {
                 )
             }
         }
-        when (tabIndex) {
-            0 -> HomeScreen()
-            1 -> LibrosPrestados()
-            2 -> SettingsScreen()
-        }
     }
 }
 
@@ -97,7 +101,6 @@ fun HomeScreen() {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -239,7 +242,7 @@ fun Main(modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     ProyectoDAMTheme {
-        //Main()
-        AniadeLibros()
+        Main()
+        //AniadeLibros()
     }
 }
