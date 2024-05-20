@@ -16,4 +16,5 @@ data class Libro(
     var estado: String? = null,
     var fechaAdquisicion: String? = null,
     @DrawableRes val portada: Int? = null
+    //Guardar como un blob
 )
