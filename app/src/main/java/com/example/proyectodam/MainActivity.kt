@@ -185,7 +185,6 @@ fun HomeScreen() {
                 query = searchQuery,
                 onQueryChange = { newQuery -> searchQuery = newQuery }
             )
-            // Spacer vertical con altura de 16.dp
             Spacer(modifier = Modifier.height(16.dp))
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
