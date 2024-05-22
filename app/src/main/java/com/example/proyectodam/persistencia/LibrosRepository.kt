@@ -23,7 +23,6 @@ class LibrosRepository(
             val valoracion = cursor.getInt(10)
             val estado = cursor.getString(11)
             val fechaAdquisicion = cursor.getString(12)
-            val portada = cursor.getInt(13)
             val libro = Libro(
                 titulo = titulo,
                 autor = autor,
@@ -37,7 +36,7 @@ class LibrosRepository(
                 valoracion = valoracion,
                 estado = estado,
                 fechaAdquisicion = fechaAdquisicion,
-                portada = portada)
+                )
             libros.add(libro)
         }
         cursor.close()
