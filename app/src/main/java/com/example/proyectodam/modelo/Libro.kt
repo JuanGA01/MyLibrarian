@@ -1,9 +1,12 @@
 package com.example.proyectodam.modelo
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.IntegerRes
 
 data class Libro(
+    var id: Int? = null,
     val titulo: String,
+    var prestado: Boolean = false,
     var autor: String? = null,
     var isbn: String? = null,
     var editorial: String? = null,

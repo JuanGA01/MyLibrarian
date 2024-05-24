@@ -53,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.proyectodam.modelo.Libro
+import com.example.proyectodam.persistencia.LibrosRepository
 import com.example.proyectodam.ui.theme.ProyectoDAMTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -64,6 +65,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ProyectoDAMTheme {
+                var librosRepository<lista> LibrosRepository = new LibrosRepository();
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Main(
                         modifier = Modifier.padding(innerPadding)
@@ -74,8 +76,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
-
 @Composable
 fun TabScreen() {
     var tabIndex by remember { mutableStateOf(0) }
@@ -85,9 +85,9 @@ fun TabScreen() {
     Column(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(1.0f)) {
             when (tabIndex) {
+                //fix me
                 0 -> HomeScreen()
                 1 -> LibrosPrestados()
-                2 -> SettingsScreen()
             }
         }
         TabRow(selectedTabIndex = tabIndex) {
@@ -174,6 +174,7 @@ fun HomeScreen() {
         )
     )
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -265,41 +266,37 @@ suspend fun buscarLibros(titulo: String): List<String> {
 
 @Composable
 fun LibrosPrestados() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Welcome to prestados",
-            style = TextStyle(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                //color = Color.Black
-            )
-        )
-    }
-}
 
-@Composable
-fun SettingsScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Welcome to setings",
-            style = TextStyle(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                //color = Color.Black
-            )
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ){
+                ListaLibros =
+                items(libros.size) { index ->
+                    val libro = libros[index]
+                    LibroCard(libro = libro)
+                }
+            }
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(30.dp)
+        ) {
+            FloatingActionButton(
+                onClick = { /* Acción a realizar */ }
+            ){
+                Icon(Icons.Filled.Add, contentDescription = "Localized description")
+            }
+        }
     }
 }
 
@@ -317,7 +314,8 @@ fun Main(modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     ProyectoDAMTheme {
-        Main()
+        //Main()
         //AniadeLibros()
+        LibrosPrestados()
     }
 }
