@@ -1,22 +1,28 @@
 package com.example.proyectodam.modelo
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.IntegerRes
-
 data class Libro(
+    // Identificador básico obligatorio de cada libro en nuesta app
     var id: Int? = null,
-    val titulo: String,
+    // El libro por defecto no está prestado
     var prestado: Boolean = false,
-    var autor: String? = null,
+    // La ubicación se guarda en estantería (mueble donde están los libros), estante (balda en la que están)
+    // y sección (A,B,C, etc. De izquierda a derecha)
+    var estanteria:Int? = null,
+    var estante:Int? = null,
+    var seccion:Char? = null,
+    // El título es, de los datos del libro, el único obligatorio, el ISBN es muy importante pero no obligatorio
+    // pues aunque no es recomendable puede haber un libro sin ISBN
+    val titulo: String,
     var isbn: String? = null,
+    var autor: String? = null,
     var editorial: String? = null,
-    var anoPublicacion: Int? = null,
+    var anioPublicacion: Int? = null,
     var genero: String? = null,
     var numeroPaginas: Int? = null,
     var idioma: String? = null,
     var resumen: String? = null,
-    var valoracion: Int? = null,
-    var estado: String? = null,
     var fechaAdquisicion: String? = null,
-    var portada: ByteArray? = null
+    var portada: ByteArray? = null,
+    // Una variable para que el usuario agregue notas personalizadas
+    var notas: String? = null,
 )

@@ -1,14 +1,18 @@
 package com.example.proyectodam
 
 import android.os.Bundle
+import android.widget.ArrayAdapter
+import android.widget.ScrollView
+import android.widget.Spinner
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,14 +21,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,13 +54,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.proyectodam.modelo.Libro
+import com.example.proyectodam.persistencia.DbOpenHelper
 import com.example.proyectodam.persistencia.LibrosRepository
 import com.example.proyectodam.ui.theme.ProyectoDAMTheme
 import kotlinx.coroutines.Dispatchers
@@ -65,10 +73,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ProyectoDAMTheme {
-                var librosRepository<lista> LibrosRepository = new LibrosRepository();
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Main(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        dbOpenHelper = DbOpenHelper(applicationContext)
                     )
                 }
             }
@@ -77,17 +85,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TabScreen() {
+fun TabScreen(dbOpenHelper: DbOpenHelper) {
     var tabIndex by remember { mutableStateOf(0) }
-
-    val tabs = listOf("Mis Libros", "Libros Prestados", "Configuración")
-
+    val tabs = listOf("Mis Libros", "Libros Prestados")
     Column(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(1.0f)) {
             when (tabIndex) {
-                //fix me
-                0 -> HomeScreen()
-                1 -> LibrosPrestados()
+                0 -> HomeScreen(dbOpenHelper)
+                1 -> LibrosPrestados(dbOpenHelper)
             }
         }
         TabRow(selectedTabIndex = tabIndex) {
@@ -99,7 +104,6 @@ fun TabScreen() {
                         when (index) {
                             0 -> Icon(imageVector = Icons.Default.Home, contentDescription = null)
                             1 -> Icon(imageVector = Icons.Default.AccountCircle, contentDescription = null)
-                            2 -> Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                         }
                     }
                 )
@@ -155,26 +159,8 @@ fun LibroCard(libro: Libro) {
 }
 
 @Composable
-fun HomeScreen() {
-    val libros = listOf(
-        Libro(
-            titulo = "Cien años de soledad",
-            autor = "Gabriel García Márquez",
-            resumen = "La obra maestra del realismo mágico."
-        ),
-        Libro(
-            titulo = "El principito",
-            autor = "Antoine de Saint-Exupéry",
-            resumen = "Un relato filosófico sobre la amistad y la humanidad."
-        ),
-        Libro(
-            titulo = "1984",
-            autor = "George Orwell",
-            resumen = "Una novela distópica sobre el control totalitario."
-        )
-    )
+fun HomeScreen(dbOpenHelper: DbOpenHelper) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -182,6 +168,8 @@ fun HomeScreen() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            val librosRepository = LibrosRepository(dbOpenHelper)
+            val libros = librosRepository.findAll(dbOpenHelper)
             BarraDeBusqueda(
                 query = searchQuery,
                 onQueryChange = { newQuery -> searchQuery = newQuery }
@@ -197,7 +185,6 @@ fun HomeScreen() {
                     LibroCard(libro = libro)
                 }
             }
-
         }
         Box(
             modifier = Modifier
@@ -211,45 +198,149 @@ fun HomeScreen() {
             }
         }
     }
-
 }
 
 @Composable
-fun AniadeLibros(){
-    var tituloLibro by remember { mutableStateOf(TextFieldValue()) }
-    var resultados by remember { mutableStateOf<List<String>>(emptyList()) }
+fun AniadeLibros() {
     val scope = rememberCoroutineScope()
-
+    var titulo by remember { mutableStateOf(TextFieldValue()) }
+    var isbn by remember { mutableStateOf(TextFieldValue()) }
+    var autor by remember { mutableStateOf(TextFieldValue()) }
+    var editorial by remember { mutableStateOf(TextFieldValue()) }
+    var anioPublicacion by remember { mutableStateOf(TextFieldValue()) }
+    var genero by remember { mutableStateOf(TextFieldValue()) }
+    var numeroPaginas by remember { mutableStateOf(TextFieldValue()) }
+    var idioma by remember { mutableStateOf(TextFieldValue()) }
+    var resumen by remember { mutableStateOf(TextFieldValue()) }
+    var fechaAdquisicion by remember { mutableStateOf(TextFieldValue()) }
+    var resultados by remember { mutableStateOf<List<String>>(emptyList()) }
+    var estanteria by remember { mutableStateOf(1) }
+    var estante by remember { mutableStateOf(1) }
+    var seccion by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .padding(16.dp)
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         OutlinedTextField(
-            value = tituloLibro,
-            onValueChange = { tituloLibro = it },
+            value = titulo,
+            onValueChange = { titulo = it },
             label = { Text("Título del libro") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
+        OutlinedTextField(
+            value = isbn,
+            onValueChange = { isbn = it },
+            label = { Text("ISBN") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = autor,
+            onValueChange = { autor = it },
+            label = { Text("Autor") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = editorial,
+            onValueChange = { editorial = it },
+            label = { Text("Editorial") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = anioPublicacion,
+            onValueChange = { anioPublicacion = it },
+            label = { Text("Año de Publicación") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = genero,
+            onValueChange = { genero = it },
+            label = { Text("Género") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = numeroPaginas,
+            onValueChange = { numeroPaginas = it },
+            label = { Text("Número de Páginas") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = idioma,
+            onValueChange = { idioma = it },
+            label = { Text("Idioma") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = resumen,
+            onValueChange = { resumen = it },
+            label = { Text("Resumen") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = fechaAdquisicion,
+            onValueChange = { fechaAdquisicion = it },
+            label = { Text("Fecha de Adquisición") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            OutlinedTextField(
+                value = estanteria.toString(),
+                onValueChange = {
+                    val value = it.toIntOrNull() ?: 0
+                    estanteria = value.coerceIn(1, 100) },
+                label = { Text("Estantería") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.weight(1f).padding(end = 8.dp)
+            )
+            OutlinedTextField(
+                value = estante.toString(),
+                onValueChange = {
+                    val value = it.toIntOrNull() ?: 0
+                    estante = value.coerceIn(1, 10)},
+                label = { Text("Estante") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+            )
+            OutlinedTextField(
+                value = seccion,
+                onValueChange = { newValue ->
+                    if (newValue.length <= 1 && newValue.all { it.isLetter() }) {
+                        seccion = newValue.uppercase()
+                    }
+                },
+                label = { Text("Sección") },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Characters
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
             scope.launch {
-                val librosEncontrados = buscarLibros(tituloLibro.text)
                 withContext(Dispatchers.Main) {
-                    resultados = librosEncontrados
+
                 }
             }
         }) {
-            Text("Buscar")
+            Text("Añadir")
         }
-
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Mostrar resultados de la búsqueda
         Column {
             resultados.forEach {
                 Text(it)
@@ -258,15 +349,8 @@ fun AniadeLibros(){
     }
 }
 
-suspend fun buscarLibros(titulo: String): List<String> {
-    // Aquí realizarías la llamada a la API para buscar libros con el título proporcionado
-    // Por ahora, solo devolveré una lista ficticia de resultados
-    return listOf("Libro 1", "Libro 2", "Libro 3")
-}
-
 @Composable
-fun LibrosPrestados() {
-
+fun LibrosPrestados(dbOpenHelper: DbOpenHelper) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -274,14 +358,15 @@ fun LibrosPrestados() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            val librosRepository = LibrosRepository(dbOpenHelper)
+            val librosPrestados = librosRepository.findPrestados(dbOpenHelper)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
-            ){
-                ListaLibros =
-                items(libros.size) { index ->
-                    val libro = libros[index]
+            ) {
+                items(librosPrestados.size) { index ->
+                    val libro = librosPrestados[index]
                     LibroCard(libro = libro)
                 }
             }
@@ -301,12 +386,12 @@ fun LibrosPrestados() {
 }
 
 @Composable
-fun Main(modifier: Modifier = Modifier) {
+fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
     Column (
         verticalArrangement = Arrangement.spacedBy(0.dp),
         modifier = Modifier.fillMaxSize()
     ){
-        TabScreen()
+        TabScreen(dbOpenHelper)
     }
 }
 
@@ -314,8 +399,6 @@ fun Main(modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     ProyectoDAMTheme {
-        //Main()
-        //AniadeLibros()
-        LibrosPrestados()
+        AniadeLibros()
     }
 }
