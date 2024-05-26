@@ -62,9 +62,10 @@ import com.example.proyectodam.ui.theme.ProyectoDAMTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
-
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,14 +85,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TabScreen(dbOpenHelper: DbOpenHelper) {
+fun TabScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
     var tabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Mis Libros", "Libros Prestados")
     Column(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(1.0f)) {
             when (tabIndex) {
-                0 -> HomeScreen(dbOpenHelper)
-                1 -> LibrosPrestados(dbOpenHelper)
+                0 -> HomeScreen(dbOpenHelper, navController)
+                1 -> LibrosPrestados(dbOpenHelper, navController)
             }
         }
         TabRow(selectedTabIndex = tabIndex) {
@@ -158,7 +159,7 @@ fun LibroCard(libro: Libro) {
 }
 
 @Composable
-fun HomeScreen(dbOpenHelper: DbOpenHelper) {
+fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -191,7 +192,7 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper) {
                 .padding(30.dp)
         ) {
             FloatingActionButton(
-                onClick = { /* Acción a realizar */ }
+                onClick = { navController.navigate("AniadeLibros") }
             ){
                 Icon(Icons.Filled.Add, contentDescription = "Localized description")
             }
@@ -200,7 +201,8 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper) {
 }
 
 @Composable
-fun AniadeLibros(launcher: ActivityResultLauncher<String>) {
+fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController) {
+    val librosRepository = LibrosRepository(dbOpenHelper)
     val scope = rememberCoroutineScope()
     var titulo by remember { mutableStateOf(TextFieldValue()) }
     var isbn by remember { mutableStateOf(TextFieldValue()) }
@@ -351,32 +353,32 @@ fun AniadeLibros(launcher: ActivityResultLauncher<String>) {
                         .height(200.dp)
                 )
             } else {
-                Button(onClick = { launcher.launch("image/*") }) {
+                Button(onClick = { /* Lógica para seleccionar imagen */  }) {
                     Text("Seleccionar Imagen")
                 }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            scope.launch {
-                withContext(Dispatchers.Main) {
-
-                }
-            }
+            librosRepository.insertLibro(
+                dbOpenHelper,
+                Libro(
+                    titulo = titulo.text,
+                    isbn = isbn.text,
+                    autor = autor.text,
+                    editorial = editorial.text
+                )
+            )
         }) {
-            Text("Añadir")
+            Text(text = "Añadir Libro")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Column {
-            resultados.forEach {
-                Text(it)
-            }
-        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
-fun LibrosPrestados(dbOpenHelper: DbOpenHelper) {
+fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -403,7 +405,7 @@ fun LibrosPrestados(dbOpenHelper: DbOpenHelper) {
                 .padding(30.dp)
         ) {
             FloatingActionButton(
-                onClick = { /* Acción a realizar */ }
+                onClick = {  }
             ){
                 Icon(Icons.Filled.Add, contentDescription = "Localized description")
             }
@@ -413,11 +415,20 @@ fun LibrosPrestados(dbOpenHelper: DbOpenHelper) {
 
 @Composable
 fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "TabScreen") {
+        composable("TabScreen") {
+            TabScreen(dbOpenHelper, navController)
+        }
+        composable("AniadeLibros") {
+            AniadeLibros(dbOpenHelper, navController)
+        }
+    }
     Column (
         verticalArrangement = Arrangement.spacedBy(0.dp),
         modifier = Modifier.fillMaxSize()
     ){
-        TabScreen(dbOpenHelper)
+        TabScreen(dbOpenHelper, navController)
     }
 }
 
