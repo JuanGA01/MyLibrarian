@@ -69,8 +69,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
 
-    implementation("com.google.accompanist:accompanist-permissions:0.23.1")
-    implementation("com.google.accompanist:accompanist-insets:0.23.1")
-    implementation("androidx.activity:activity-compose:1.4.0")
-
 }
