@@ -1,14 +1,12 @@
 package com.example.proyectodam
 
+import android.graphics.Bitmap
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.ScrollView
-import android.widget.Spinner
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,11 +29,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -53,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -66,6 +62,9 @@ import com.example.proyectodam.ui.theme.ProyectoDAMTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,13 +116,13 @@ fun BarraDeBusqueda (query: TextFieldValue, onQueryChange: (TextFieldValue) -> U
     TextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Buscar...") },
         leadingIcon = {
             Icon(
                 painter = painterResource(id = android.R.drawable.ic_menu_search),
                 contentDescription = null
             )
         },
+        placeholder = { Text("Buscar...") },
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
@@ -201,7 +200,7 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper) {
 }
 
 @Composable
-fun AniadeLibros() {
+fun AniadeLibros(launcher: ActivityResultLauncher<String>) {
     val scope = rememberCoroutineScope()
     var titulo by remember { mutableStateOf(TextFieldValue()) }
     var isbn by remember { mutableStateOf(TextFieldValue()) }
@@ -217,6 +216,11 @@ fun AniadeLibros() {
     var estanteria by remember { mutableStateOf(1) }
     var estante by remember { mutableStateOf(1) }
     var seccion by remember { mutableStateOf("") }
+
+    var imagenBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var portada: ByteArray? by remember { mutableStateOf(null) }
+
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -304,7 +308,9 @@ fun AniadeLibros() {
                     estanteria = value.coerceIn(1, 100) },
                 label = { Text("Estantería") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f).padding(end = 8.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
             )
             OutlinedTextField(
                 value = estante.toString(),
@@ -313,7 +319,9 @@ fun AniadeLibros() {
                     estante = value.coerceIn(1, 10)},
                 label = { Text("Estante") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
             )
             OutlinedTextField(
                 value = seccion,
@@ -327,8 +335,26 @@ fun AniadeLibros() {
                     keyboardType = KeyboardType.Text,
                     capitalization = KeyboardCapitalization.Characters
                 ),
-                modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
             )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Column {
+            if (imagenBitmap != null) {
+                Image(
+                    bitmap = imagenBitmap!!.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+            } else {
+                Button(onClick = { launcher.launch("image/*") }) {
+                    Text("Seleccionar Imagen")
+                }
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
@@ -399,6 +425,6 @@ fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
 @Composable
 fun GreetingPreview() {
     ProyectoDAMTheme {
-        AniadeLibros()
+        //Main()
     }
 }
