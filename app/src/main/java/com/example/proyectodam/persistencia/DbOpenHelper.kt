@@ -5,28 +5,32 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 const val DB_FILE_NAME = "libros"
-const val DB_VERSION = 1
+const val DB_VERSION = 3
 class DbOpenHelper(context: Context)
     : SQLiteOpenHelper(context, DB_FILE_NAME, null, DB_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase?) {
         db!!.execSQL("CREATE TABLE libros (" +
-                "    id INTEGER," +
+                "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "    prestado BOOLEAN NOT NULL DEFAULT 0," +
+                "    estanteria INTEGER," +
+                "    estante INTEGER," +
+                "    seccion CHAR(1)," +
                 "    titulo VARCHAR(200) NOT NULL," +
-                "    autor VARCHAR(200)," +
                 "    isbn VARCHAR(13)," +
+                "    autor VARCHAR(200)," +
                 "    editorial TEXT," +
-                "    anoPublicacion INTEGER," +
+                "    anioPublicacion INTEGER," +
                 "    genero TEXT," +
                 "    numeroPaginas INTEGER," +
                 "    idioma TEXT," +
                 "    resumen TEXT," +
-                "    valoracion INTEGER," +
-                "    estado TEXT," +
                 "    fechaAdquisicion DATE," +
-                "    portada INTEGER" +
+                "    portada BLOB," +
+                "    notas TEXT" +
                 ")")
     }
+
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db!!.execSQL("DROP TABLE  libros")

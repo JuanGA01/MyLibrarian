@@ -68,6 +68,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.proyectodam.modelo.LibroViewModelFactory
 import com.example.proyectodam.modelo.MyViewModel
 
 class MainActivity : ComponentActivity() {
@@ -162,7 +163,7 @@ fun LibroCard(libro: Libro) {
 }
 
 @Composable
-fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel()) {
+fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -203,7 +204,7 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
 }
 
 @Composable
-fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel()) {
+fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
     val librosRepository = LibrosRepository(dbOpenHelper)
     val scope = rememberCoroutineScope()
     var titulo by remember { mutableStateOf(TextFieldValue()) }

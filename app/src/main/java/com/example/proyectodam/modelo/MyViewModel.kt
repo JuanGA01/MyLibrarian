@@ -7,18 +7,35 @@ import androidx.lifecycle.ViewModel
 import com.example.proyectodam.persistencia.DbOpenHelper
 import com.example.proyectodam.persistencia.LibrosRepository
 
-class MyViewModel: ViewModel() {
+import androidx.lifecycle.ViewModelProvider
+
+class LibroViewModelFactory(private val dbHelper: DbOpenHelper) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(MyViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return MyViewModel(dbHelper) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
     var libros by  mutableStateOf(listOf<Libro>())
         private set
+
+    init {
+        cargarLibros()
+    }
+
     fun addLibro(dbOpenHelper: DbOpenHelper, libro:Libro) {
         val librosRepository = LibrosRepository(dbOpenHelper)
         librosRepository.insertLibro(
             dbOpenHelper,libro
             )
-        cargarLibros(dbOpenHelper)
+        cargarLibros()
     }
 
-    fun cargarLibros(dbOpenHelper: DbOpenHelper) {
-        libros = LibrosRepository(dbOpenHelper).findAll()
+    fun cargarLibros() {
+        libros = LibrosRepository(dbHelper).findAll()
     }
 }
