@@ -8,7 +8,7 @@ import com.example.proyectodam.modelo.Libro
 class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
 
     //Función para sacar todos los libros
-    fun findAll(dbOpenHelper: SQLiteOpenHelper): List<Libro> {
+    fun findAll(): List<Libro> {
         val db = dbOpenHelper.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM libros", null)
         val libros = mutableListOf<Libro>()

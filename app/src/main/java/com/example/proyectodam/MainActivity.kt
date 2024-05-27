@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.proyectodam.modelo.Libro
 import com.example.proyectodam.persistencia.DbOpenHelper
 import com.example.proyectodam.persistencia.LibrosRepository
@@ -66,6 +68,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.proyectodam.modelo.MyViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -159,7 +162,7 @@ fun LibroCard(libro: Libro) {
 }
 
 @Composable
-fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
+fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel()) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -169,7 +172,7 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val librosRepository = LibrosRepository(dbOpenHelper)
-            val libros = librosRepository.findAll(dbOpenHelper)
+            val libros = librosRepository.findAll()
             BarraDeBusqueda(
                 query = searchQuery,
                 onQueryChange = { newQuery -> searchQuery = newQuery }
@@ -180,8 +183,7 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ){
-                items(libros.size) { index ->
-                    val libro = libros[index]
+                items(myViewModel.libros)  {libro ->
                     LibroCard(libro = libro)
                 }
             }
@@ -201,7 +203,7 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
 }
 
 @Composable
-fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController) {
+fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel()) {
     val librosRepository = LibrosRepository(dbOpenHelper)
     val scope = rememberCoroutineScope()
     var titulo by remember { mutableStateOf(TextFieldValue()) }
@@ -360,15 +362,13 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController) {
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            librosRepository.insertLibro(
-                dbOpenHelper,
+            myViewModel.addLibro(dbOpenHelper,
                 Libro(
-                    titulo = titulo.text,
-                    isbn = isbn.text,
-                    autor = autor.text,
-                    editorial = editorial.text
-                )
-            )
+                titulo = titulo.text,
+                isbn = isbn.text,
+                autor = autor.text,
+                editorial = editorial.text
+            ))
         }) {
             Text(text = "Añadir Libro")
         }
