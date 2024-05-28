@@ -29,9 +29,7 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
 
     fun addLibro(dbOpenHelper: DbOpenHelper, libro:Libro) {
         val librosRepository = LibrosRepository(dbOpenHelper)
-        librosRepository.insertLibro(
-            dbOpenHelper,libro
-            )
+        librosRepository.insertLibro(dbOpenHelper, libro)
         cargarLibros()
     }
 

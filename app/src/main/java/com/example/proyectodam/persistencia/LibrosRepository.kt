@@ -252,6 +252,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
             put("estanteria", libro.estanteria)
             put("estante", libro.estante)
             put("seccion", libro.seccion?.toString())
+            put("portada", libro.portada)
         }
         var newRowId: Long
         try {

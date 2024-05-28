@@ -1,10 +1,14 @@
 package com.example.proyectodam
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +54,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -68,9 +75,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.proyectodam.modelo.LibroViewModelFactory
 import com.example.proyectodam.modelo.MyViewModel
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,19 +158,33 @@ fun LibroCard(libro: Libro) {
             .fillMaxWidth()
             .aspectRatio(1.4f)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(text = libro.titulo)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Autor: ${libro.autor ?: "Desconocido"}")
-            libro.resumen?.let {
+        Box {
+            libro.portada?.let { uri ->
+                val bitmap = uri.loadBitmap(270, 270)
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .background(Color.Transparent) // Asegura que el contenido de la Column no se solape con la imagen
+            ) {
+                Text(text = libro.titulo)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Resumen: $it")
+                Text(text = "Autor: ${libro.autor ?: "Desconocido"}")
+                libro.resumen?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Resumen: $it")
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
@@ -208,8 +229,6 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
 
 @Composable
 fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
-    val librosRepository = LibrosRepository(dbOpenHelper)
-    val scope = rememberCoroutineScope()
     var titulo by remember { mutableStateOf(TextFieldValue()) }
     var isbn by remember { mutableStateOf(TextFieldValue()) }
     var autor by remember { mutableStateOf(TextFieldValue()) }
@@ -220,13 +239,13 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
     var idioma by remember { mutableStateOf(TextFieldValue()) }
     var resumen by remember { mutableStateOf(TextFieldValue()) }
     var fechaAdquisicion by remember { mutableStateOf(TextFieldValue()) }
-    var resultados by remember { mutableStateOf<List<String>>(emptyList()) }
     var estanteria by remember { mutableStateOf(1) }
     var estante by remember { mutableStateOf(1) }
     var seccion by remember { mutableStateOf("") }
 
-    var imagenBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var portada: ByteArray? by remember { mutableStateOf(null) }
+    var imagenBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
 
     Column(
@@ -359,19 +378,50 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                         .height(200.dp)
                 )
             } else {
-                Button(onClick = { /* Lógica para seleccionar imagen */  }) {
-                    Text("Seleccionar Imagen")
+                val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.PickVisualMedia(),
+                    onResult = { uri -> selectedImageUri = uri }
+                )
+                Column {
+                    AsyncImage(
+                        model = selectedImageUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Button(
+                        onClick = {
+                            singlePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                    ) {
+                        Text(text = "Pick photo")
+                    }
                 }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
+
         Button(onClick = {
             myViewModel.addLibro(dbOpenHelper,
                 Libro(
-                titulo = titulo.text,
-                isbn = isbn.text,
-                autor = autor.text,
-                editorial = editorial.text
+                    titulo = titulo.text,
+                    isbn = isbn.text,
+                    autor = autor.text,
+                    editorial = editorial.text,
+                    anioPublicacion = anioPublicacion.text.toIntOrNull() ?: 0,
+                    genero = genero.text,
+                    numeroPaginas = numeroPaginas.text.toIntOrNull() ?: 0,
+                    idioma = idioma.text,
+                    resumen = resumen.text,
+                    fechaAdquisicion = fechaAdquisicion.text,
+                    estanteria = estanteria,
+                    estante = estante,
+                    seccion = seccion.firstOrNull() ?: ' ',
+                    portada = portada ?: ByteArray(0)
+
             ))
         }) {
             Text(text = "Añadir Libro")
@@ -380,6 +430,29 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @Composable
 fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController) {
