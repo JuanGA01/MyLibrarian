@@ -1,6 +1,7 @@
 package com.example.proyectodam
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -44,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -78,6 +80,9 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.proyectodam.modelo.LibroViewModelFactory
 import com.example.proyectodam.modelo.MyViewModel
+import kotlinx.coroutines.CoroutineScope
+import java.io.ByteArrayOutputStream
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -403,6 +408,20 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
+
+
+
+
+        if (selectedImageUri != null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                val contentResolver = applicationContext.contentResolver
+                val inputStream = contentResolver.openInputStream(selectedImageUri!!)
+                portada = inputStream?.use { it.readBytes() }
+            }
+        }
+
+
+
 
         Button(onClick = {
             myViewModel.addLibro(dbOpenHelper,
