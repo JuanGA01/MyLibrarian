@@ -92,7 +92,10 @@ class MainActivity : ComponentActivity() {
 fun TabScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
     var tabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Mis Libros", "Libros Prestados")
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(top = 15.dp, bottom = 5.dp)
+    ) {
         Box(modifier = Modifier.weight(1.0f)) {
             when (tabIndex) {
                 0 -> HomeScreen(dbOpenHelper, navController)
@@ -425,13 +428,8 @@ fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
             AniadeLibros(dbOpenHelper, navController)
         }
     }
-    Column (
-        verticalArrangement = Arrangement.spacedBy(0.dp),
-        modifier = Modifier.fillMaxSize()
-    ){
-        TabScreen(dbOpenHelper, navController)
-    }
 }
+
 
 @Preview(showBackground = true)
 @Composable
