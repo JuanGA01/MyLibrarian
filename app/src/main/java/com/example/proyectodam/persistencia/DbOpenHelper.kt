@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 const val DB_FILE_NAME = "libros"
-const val DB_VERSION = 3
+const val DB_VERSION = 4
 class DbOpenHelper(context: Context)
     : SQLiteOpenHelper(context, DB_FILE_NAME, null, DB_VERSION) {
 
@@ -26,7 +26,7 @@ class DbOpenHelper(context: Context)
                 "    idioma TEXT," +
                 "    resumen TEXT," +
                 "    fechaAdquisicion DATE," +
-                "    portada BLOB," +
+                "    portada TEXT," +
                 "    notas TEXT" +
                 ")")
     }

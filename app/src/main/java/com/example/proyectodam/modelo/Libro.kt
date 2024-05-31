@@ -22,7 +22,7 @@ data class Libro(
     var idioma: String? = null,
     var resumen: String? = null,
     var fechaAdquisicion: String? = null,
-    var portada: ByteArray? = null,
+    var portada: String? = null,
     // Una variable para que el usuario agregue notas personalizadas
     var notas: String? = null,
 )

@@ -1,9 +1,11 @@
 package com.example.proyectodam
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -158,16 +160,17 @@ fun BarraDeBusqueda (query: TextFieldValue, onQueryChange: (TextFieldValue) -> U
 
 @Composable
 fun LibroCard(libro: Libro) {
+    Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1.4f)
+            //.aspectRatio(1.4f)
     ) {
         Box {
             libro.portada?.let { uri ->
-                val bitmap = uri.loadBitmap(270, 270)
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
+                AsyncImage(
+                    model = uri,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -383,9 +386,14 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                         .height(200.dp)
                 )
             } else {
+                val context = LocalContext.current
                 val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.PickVisualMedia(),
-                    onResult = { uri -> selectedImageUri = uri }
+                    onResult = {
+                        uri -> selectedImageUri = uri
+                        val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        context.contentResolver.takePersistableUriPermission(uri!!, flag)
+                    }
                 )
                 Column {
                     AsyncImage(
@@ -411,18 +419,6 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
 
 
 
-
-        if (selectedImageUri != null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                val contentResolver = applicationContext.contentResolver
-                val inputStream = contentResolver.openInputStream(selectedImageUri!!)
-                portada = inputStream?.use { it.readBytes() }
-            }
-        }
-
-
-
-
         Button(onClick = {
             myViewModel.addLibro(dbOpenHelper,
                 Libro(
@@ -439,7 +435,7 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                     estanteria = estanteria,
                     estante = estante,
                     seccion = seccion.firstOrNull() ?: ' ',
-                    portada = portada ?: ByteArray(0)
+                    portada = selectedImageUri.toString(),
 
             ))
         }) {
