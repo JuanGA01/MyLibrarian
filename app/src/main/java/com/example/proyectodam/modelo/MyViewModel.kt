@@ -43,4 +43,11 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
         librosPrestados = LibrosRepository(dbHelper).findAllPrestados()
     }
 
+    fun marcarComoPrestado(libro: Libro) {
+        val librosRepository = LibrosRepository(dbHelper)
+        librosRepository.marcarComoPrestado(libro)
+        cargarLibros()
+        cargarLibrosPrestados()
+    }
+
 }

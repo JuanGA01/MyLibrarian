@@ -14,6 +14,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -159,13 +162,20 @@ fun BarraDeBusqueda (query: TextFieldValue, onQueryChange: (TextFieldValue) -> U
 }
 
 @Composable
-fun LibroCard(libro: Libro) {
+fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit) {
     Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
+
+    val borderColor = if (libro.prestado) Color.Red else Color.Green
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            //.aspectRatio(1.4f)
+            .border(2.dp, borderColor)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { onLongPress(libro) }
+                )
+            }
     ) {
         Box {
             libro.portada?.let { uri ->
@@ -179,7 +189,7 @@ fun LibroCard(libro: Libro) {
             Column(
                 modifier = Modifier
                     .padding(16.dp)
-                    .background(Color.Transparent) // Asegura que el contenido de la Column no se solape con la imagen
+                    .background(Color.Transparent)
             ) {
                 Text(text = libro.titulo)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -194,9 +204,18 @@ fun LibroCard(libro: Libro) {
 }
 
 
+
+
+
 @Composable
 fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+
+    // Actualiza la lista de libros prestados al inicializar la vista
+    LaunchedEffect(Unit) {
+        myViewModel.cargarLibros()
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -213,9 +232,11 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
-            ){
-                items(myViewModel.libros)  {libro ->
-                    LibroCard(libro = libro)
+            ) {
+                items(myViewModel.libros) { libro ->
+                    LibroCard(libro = libro, onLongPress = { selectedLibro ->
+                        myViewModel.marcarComoPrestado(selectedLibro)
+                    })
                 }
             }
         }
@@ -226,16 +247,23 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
         ) {
             FloatingActionButton(
                 onClick = { navController.navigate("AniadeLibros") }
-            ){
+            ) {
                 Icon(Icons.Filled.Add, contentDescription = "Localized description")
             }
         }
     }
 }
 
+
 @Composable
 fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+
+    // Actualiza la lista de libros prestados al inicializar la vista
+    LaunchedEffect(Unit) {
+        myViewModel.cargarLibrosPrestados()
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -252,14 +280,28 @@ fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, my
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
-            ){
-                items(myViewModel.librosPrestados)  {libro ->
-                    LibroCard(libro = libro)
+            ) {
+                items(myViewModel.librosPrestados) { libro ->
+                    LibroCard(libro = libro, onLongPress = { selectedLibro ->
+                        // Aquí podrías implementar alguna acción en caso de pulsación prolongada si lo necesitas.
+                    })
                 }
+            }
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(30.dp)
+        ) {
+            FloatingActionButton(
+                onClick = { navController.navigate("AniadeLibros") }
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Localized description")
             }
         }
     }
 }
+
 
 @Composable
 fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {

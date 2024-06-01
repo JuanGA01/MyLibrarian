@@ -115,6 +115,16 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
         return libros
     }
 
+    // Función para marcar un libro como prestado
+    fun marcarComoPrestado(libro: Libro) {
+        val db = dbOpenHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("prestado", 1)
+        }
+        db.update("libros", values, "id = ?", arrayOf(libro.id.toString()))
+        db.close()
+    }
+
     // Función para sacar los libros no prestados
     fun findNoPrestados(dbOpenHelper: SQLiteOpenHelper): List<Libro> {
         val db = dbOpenHelper.readableDatabase
