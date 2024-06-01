@@ -6,9 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper
 
 const val DB_FILE_NAME = "libros"
 const val DB_VERSION = 4
-class DbOpenHelper(context: Context)
-    : SQLiteOpenHelper(context, DB_FILE_NAME, null, DB_VERSION) {
-
+class DbOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_FILE_NAME, null, DB_VERSION) {
     override fun onCreate(db: SQLiteDatabase?) {
         db!!.execSQL("CREATE TABLE libros (" +
                 "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -30,7 +28,6 @@ class DbOpenHelper(context: Context)
                 "    notas TEXT" +
                 ")")
     }
-
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db!!.execSQL("DROP TABLE  libros")

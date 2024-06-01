@@ -125,62 +125,39 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
         db.close()
     }
 
-    // Función para sacar los libros no prestados
-    fun findNoPrestados(dbOpenHelper: SQLiteOpenHelper): List<Libro> {
-        val db = dbOpenHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM libros WHERE prestado = 0", null)
-        val libros = mutableListOf<Libro>()
-
+    // Función para insertar libros, retorna el ID del nuevo libro o -1 si ocurrió un error
+    fun insertLibro(dbOpenHelper: SQLiteOpenHelper, libro: Libro): Long {
+        val db = dbOpenHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("titulo", libro.titulo)
+            put("prestado", if (libro.prestado) 1 else 0)
+            put("autor", libro.autor)
+            put("isbn", libro.isbn)
+            put("editorial", libro.editorial)
+            put("anioPublicacion", libro.anioPublicacion)
+            put("genero", libro.genero)
+            put("numeroPaginas", libro.numeroPaginas)
+            put("idioma", libro.idioma)
+            put("resumen", libro.resumen)
+            put("fechaAdquisicion", libro.fechaAdquisicion)
+            put("portada", libro.portada)
+            put("notas", libro.notas)
+            put("estanteria", libro.estanteria)
+            put("estante", libro.estante)
+            put("seccion", libro.seccion?.toString())
+            put("portada", libro.portada)
+        }
+        var newRowId: Long
         try {
-            val columnIndices = cursor.columnNames.mapIndexed { index, name -> name to index }.toMap()
-            while (cursor.moveToNext()) {
-                val id = cursor.getIntOrNull(columnIndices["id"] ?: -1)
-                val prestado = cursor.getIntOrNull(columnIndices["prestado"] ?: -1)?.let { it == 1 } ?: false
-                val titulo = cursor.getString(columnIndices["titulo"] ?: -1)
-                val autor = cursor.getStringOrNull(columnIndices["autor"] ?: -1)
-                val isbn = cursor.getStringOrNull(columnIndices["isbn"] ?: -1)
-                val editorial = cursor.getStringOrNull(columnIndices["editorial"] ?: -1)
-                val anioPublicacion = cursor.getIntOrNull(columnIndices["anioPublicacion"] ?: -1)
-                val genero = cursor.getStringOrNull(columnIndices["genero"] ?: -1)
-                val numeroPaginas = cursor.getIntOrNull(columnIndices["numeroPaginas"] ?: -1)
-                val idioma = cursor.getStringOrNull(columnIndices["idioma"] ?: -1)
-                val resumen = cursor.getStringOrNull(columnIndices["resumen"] ?: -1)
-                val fechaAdquisicion = cursor.getStringOrNull(columnIndices["fechaAdquisicion"] ?: -1)
-                val portada = cursor.getStringOrNull(columnIndices["portada"] ?: -1)
-                val notas = cursor.getStringOrNull(columnIndices["notas"] ?: -1)
-                val estanteria = cursor.getIntOrNull(columnIndices["estanteria"] ?: -1)
-                val estante = cursor.getIntOrNull(columnIndices["estante"] ?: -1)
-                val seccion = cursor.getStringOrNull(columnIndices["seccion"] ?: -1)?.firstOrNull()
-                val libro = Libro(
-                    id = id,
-                    prestado = prestado,
-                    estanteria = estanteria,
-                    estante = estante,
-                    seccion = seccion,
-                    titulo = titulo,
-                    isbn = isbn,
-                    autor = autor,
-                    editorial = editorial,
-                    anioPublicacion = anioPublicacion,
-                    genero = genero,
-                    numeroPaginas = numeroPaginas,
-                    idioma = idioma,
-                    resumen = resumen,
-                    fechaAdquisicion = fechaAdquisicion,
-                    portada = portada,
-                    notas = notas
-                )
-                libros.add(libro)
-            }
+            newRowId = db.insert("libros", null, values)
         } finally {
-            cursor.close()
             db.close()
         }
-        return libros
+        return newRowId
     }
 
     // Función para buscar un libro por su Id
-    fun findById(dbOpenHelper: SQLiteOpenHelper, id: Int): Libro? {
+    fun findById(id: Int): Libro? {
         val db = dbOpenHelper.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM libros WHERE id = ?", arrayOf(id.toString()))
         var libro: Libro? = null
@@ -242,35 +219,58 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
         return affectedRows > 0
     }
 
-    // Función para insertar libros, retorna el ID del nuevo libro o -1 si ocurrió un error
-    fun insertLibro(dbOpenHelper: SQLiteOpenHelper, libro: Libro): Long {
-        val db = dbOpenHelper.writableDatabase
-        val values = ContentValues().apply {
-            put("titulo", libro.titulo)
-            put("prestado", if (libro.prestado) 1 else 0)
-            put("autor", libro.autor)
-            put("isbn", libro.isbn)
-            put("editorial", libro.editorial)
-            put("anioPublicacion", libro.anioPublicacion)
-            put("genero", libro.genero)
-            put("numeroPaginas", libro.numeroPaginas)
-            put("idioma", libro.idioma)
-            put("resumen", libro.resumen)
-            put("fechaAdquisicion", libro.fechaAdquisicion)
-            put("portada", libro.portada)
-            put("notas", libro.notas)
-            put("estanteria", libro.estanteria)
-            put("estante", libro.estante)
-            put("seccion", libro.seccion?.toString())
-            put("portada", libro.portada)
-        }
-        var newRowId: Long
+    // Función para sacar los libros no prestados
+    fun findNoPrestados(dbOpenHelper: SQLiteOpenHelper): List<Libro> {
+        val db = dbOpenHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM libros WHERE prestado = 0", null)
+        val libros = mutableListOf<Libro>()
+
         try {
-            newRowId = db.insert("libros", null, values)
+            val columnIndices = cursor.columnNames.mapIndexed { index, name -> name to index }.toMap()
+            while (cursor.moveToNext()) {
+                val id = cursor.getIntOrNull(columnIndices["id"] ?: -1)
+                val prestado = cursor.getIntOrNull(columnIndices["prestado"] ?: -1)?.let { it == 1 } ?: false
+                val titulo = cursor.getString(columnIndices["titulo"] ?: -1)
+                val autor = cursor.getStringOrNull(columnIndices["autor"] ?: -1)
+                val isbn = cursor.getStringOrNull(columnIndices["isbn"] ?: -1)
+                val editorial = cursor.getStringOrNull(columnIndices["editorial"] ?: -1)
+                val anioPublicacion = cursor.getIntOrNull(columnIndices["anioPublicacion"] ?: -1)
+                val genero = cursor.getStringOrNull(columnIndices["genero"] ?: -1)
+                val numeroPaginas = cursor.getIntOrNull(columnIndices["numeroPaginas"] ?: -1)
+                val idioma = cursor.getStringOrNull(columnIndices["idioma"] ?: -1)
+                val resumen = cursor.getStringOrNull(columnIndices["resumen"] ?: -1)
+                val fechaAdquisicion = cursor.getStringOrNull(columnIndices["fechaAdquisicion"] ?: -1)
+                val portada = cursor.getStringOrNull(columnIndices["portada"] ?: -1)
+                val notas = cursor.getStringOrNull(columnIndices["notas"] ?: -1)
+                val estanteria = cursor.getIntOrNull(columnIndices["estanteria"] ?: -1)
+                val estante = cursor.getIntOrNull(columnIndices["estante"] ?: -1)
+                val seccion = cursor.getStringOrNull(columnIndices["seccion"] ?: -1)?.firstOrNull()
+                val libro = Libro(
+                    id = id,
+                    prestado = prestado,
+                    estanteria = estanteria,
+                    estante = estante,
+                    seccion = seccion,
+                    titulo = titulo,
+                    isbn = isbn,
+                    autor = autor,
+                    editorial = editorial,
+                    anioPublicacion = anioPublicacion,
+                    genero = genero,
+                    numeroPaginas = numeroPaginas,
+                    idioma = idioma,
+                    resumen = resumen,
+                    fechaAdquisicion = fechaAdquisicion,
+                    portada = portada,
+                    notas = notas
+                )
+                libros.add(libro)
+            }
         } finally {
+            cursor.close()
             db.close()
         }
-        return newRowId
+        return libros
     }
 
     // Función que devuelve la lista de libros encontrados por su título

@@ -50,4 +50,12 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
         cargarLibrosPrestados()
     }
 
+    fun buscarPorId(id: Int): Libro? {
+        return LibrosRepository(dbHelper).findById(id)
+    }
+
+    fun borrarPorId(id: Int): Boolean {
+        return LibrosRepository(dbHelper).deleteById(id)
+    }
+
 }

@@ -79,9 +79,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.compose.AsyncImage
 import com.example.proyectodam.modelo.LibroViewModelFactory
 import com.example.proyectodam.modelo.MyViewModel
@@ -162,7 +164,7 @@ fun BarraDeBusqueda (query: TextFieldValue, onQueryChange: (TextFieldValue) -> U
 }
 
 @Composable
-fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit) {
+fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
     Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
 
     val borderColor = if (libro.prestado) Color.Red else Color.Green
@@ -173,7 +175,8 @@ fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit) {
             .border(2.dp, borderColor)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onLongPress = { onLongPress(libro) }
+                    onLongPress = { onLongPress(libro) },
+                    onTap = { onTap(libro) }
                 )
             }
     ) {
@@ -203,15 +206,10 @@ fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit) {
     }
 }
 
-
-
-
-
 @Composable
 fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
-    // Actualiza la lista de libros prestados al inicializar la vista
     LaunchedEffect(Unit) {
         myViewModel.cargarLibros()
     }
@@ -234,9 +232,10 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(myViewModel.libros) { libro ->
-                    LibroCard(libro = libro, onLongPress = { selectedLibro ->
-                        myViewModel.marcarComoPrestado(selectedLibro)
-                    })
+                    LibroCard(libro = libro,
+                        onLongPress = { selectedLibro -> myViewModel.marcarComoPrestado(selectedLibro) },
+                        onTap = { selectedLibro -> navController.navigate("CaracteristicasLibro/${selectedLibro.id}") }
+                    )
                 }
             }
         }
@@ -254,12 +253,10 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
     }
 }
 
-
 @Composable
 fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
-    // Actualiza la lista de libros prestados al inicializar la vista
     LaunchedEffect(Unit) {
         myViewModel.cargarLibrosPrestados()
     }
@@ -282,25 +279,16 @@ fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, my
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(myViewModel.librosPrestados) { libro ->
-                    LibroCard(libro = libro, onLongPress = { selectedLibro ->
-                        // Aquí podrías implementar alguna acción en caso de pulsación prolongada si lo necesitas.
-                    })
+                    LibroCard(libro = libro,
+                        onLongPress = { selectedLibro -> /**/ },
+                        onTap = { selectedLibro -> navController.navigate("CaracteristicasLibro/${selectedLibro.id}") }
+                    )
                 }
-            }
-        }
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(30.dp)
-        ) {
-            FloatingActionButton(
-                onClick = { navController.navigate("AniadeLibros") }
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Localized description")
             }
         }
     }
 }
+
 
 
 @Composable
@@ -313,8 +301,14 @@ fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
         composable("AniadeLibros") {
             AniadeLibros(dbOpenHelper, navController)
         }
-        composable("CaracteristicasLibro") {
-            AniadeLibros(dbOpenHelper, navController)
+        composable(
+            route = "CaracteristicasLibro/{libroId}",
+            arguments = listOf(navArgument("libroId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val libroId = backStackEntry.arguments?.getInt("libroId")
+            if (libroId != null) {
+                CaracteristicasLibro(dbOpenHelper, navController, libroId)
+            }
         }
     }
 }
