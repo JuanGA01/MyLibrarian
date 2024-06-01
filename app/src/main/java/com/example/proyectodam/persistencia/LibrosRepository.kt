@@ -63,7 +63,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
     }
 
     // Función para sacar los libros prestados
-    fun findPrestados(dbOpenHelper: SQLiteOpenHelper): List<Libro> {
+    fun findAllPrestados(): List<Libro> {
         val db = dbOpenHelper.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM libros WHERE prestado = 1", null)
         val libros = mutableListOf<Libro>()
@@ -343,9 +343,5 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
     // Devuelve el valor de cadena de la columna si es válida y no es nula, de lo contrario devuelve null
     private fun Cursor.getStringOrNull(columnIndex: Int): String? =
         if (columnIndex >= 0 && !isNull(columnIndex)) getString(columnIndex) else null
-
-    // Devuelve el valor binario (array de bytes) de la columna si es válida y no es nula, de lo contrario devuelve null
-    private fun Cursor.getBlobOrNull(columnIndex: Int): ByteArray? =
-        if (columnIndex >= 0 && !isNull(columnIndex)) getBlob(columnIndex) else null
 
 }

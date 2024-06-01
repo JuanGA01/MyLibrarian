@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.proyectodam.persistencia.DbOpenHelper
 import com.example.proyectodam.persistencia.LibrosRepository
-
 import androidx.lifecycle.ViewModelProvider
 
 class LibroViewModelFactory(private val dbHelper: DbOpenHelper) : ViewModelProvider.Factory {
@@ -20,11 +19,14 @@ class LibroViewModelFactory(private val dbHelper: DbOpenHelper) : ViewModelProvi
 }
 
 class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
+    var librosPrestados by  mutableStateOf(listOf<Libro>())
+        private set
     var libros by  mutableStateOf(listOf<Libro>())
         private set
 
     init {
         cargarLibros()
+        cargarLibrosPrestados()
     }
 
     fun addLibro(dbOpenHelper: DbOpenHelper, libro:Libro) {
@@ -36,4 +38,9 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
     fun cargarLibros() {
         libros = LibrosRepository(dbHelper).findAll()
     }
+
+    fun cargarLibrosPrestados(){
+        librosPrestados = LibrosRepository(dbHelper).findAllPrestados()
+    }
+
 }
