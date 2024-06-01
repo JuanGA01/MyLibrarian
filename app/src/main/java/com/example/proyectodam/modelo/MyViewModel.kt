@@ -57,5 +57,8 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
     fun borrarPorId(id: Int): Boolean {
         return LibrosRepository(dbHelper).deleteById(id)
     }
+    fun actualizarLibro(libro: Libro): Boolean {
+        return LibrosRepository(dbHelper).updateLibro(libro)
+    }
 
 }

@@ -219,6 +219,36 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
         return affectedRows > 0
     }
 
+    //Función para actualizar un libro
+    fun updateLibro(libro: Libro): Boolean {
+        val db = dbOpenHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("titulo", libro.titulo)
+            put("prestado", if (libro.prestado) 1 else 0)
+            put("autor", libro.autor)
+            put("isbn", libro.isbn)
+            put("editorial", libro.editorial)
+            put("anioPublicacion", libro.anioPublicacion)
+            put("genero", libro.genero)
+            put("numeroPaginas", libro.numeroPaginas)
+            put("idioma", libro.idioma)
+            put("resumen", libro.resumen)
+            put("fechaAdquisicion", libro.fechaAdquisicion)
+            put("portada", libro.portada)
+            put("notas", libro.notas)
+            put("estanteria", libro.estanteria)
+            put("estante", libro.estante)
+            put("seccion", libro.seccion?.toString())
+        }
+        var affectedRows = 0
+        try {
+            affectedRows = db.update("libros", values, "id = ?", arrayOf(libro.id.toString()))
+        } finally {
+            db.close()
+        }
+        return affectedRows > 0
+    }
+
     // Función para sacar los libros no prestados
     fun findNoPrestados(dbOpenHelper: SQLiteOpenHelper): List<Libro> {
         val db = dbOpenHelper.readableDatabase
