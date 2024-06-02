@@ -19,19 +19,19 @@ class LibroViewModelFactory(private val dbHelper: DbOpenHelper) : ViewModelProvi
 }
 
 class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
+
     var libros by  mutableStateOf(listOf<Libro>())
         private set
+
     var librosPrestados by  mutableStateOf(listOf<Libro>())
         private set
-    var librosNoPrestados by  mutableStateOf(listOf<Libro>())
-        private set
+
     var librosFiltrados by  mutableStateOf(listOf<Libro>())
         private set
 
     init {
         cargarLibros()
         cargarLibrosPrestados()
-        cargarLibrosNoPrestados()
     }
 
     fun addLibro(dbOpenHelper: DbOpenHelper, libro:Libro) {
@@ -39,7 +39,6 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
         librosRepository.insertLibro(dbOpenHelper, libro)
         cargarLibros()
         cargarLibrosPrestados()
-        cargarLibrosNoPrestados()
     }
 
     fun cargarLibros() {
@@ -48,10 +47,6 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
 
     fun cargarLibrosPrestados(){
         librosPrestados = LibrosRepository(dbHelper).findAllPrestados()
-    }
-
-    fun cargarLibrosNoPrestados(){
-        librosNoPrestados = LibrosRepository(dbHelper).findAllNoPrestados()
     }
 
     fun cargarLibrosFiltrados(newQuery:String) {
@@ -77,5 +72,4 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
     fun actualizarLibro(libro: Libro): Boolean {
         return LibrosRepository(dbHelper).updateLibro(libro)
     }
-
 }

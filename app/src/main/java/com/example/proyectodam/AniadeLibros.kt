@@ -1,14 +1,17 @@
 package com.example.proyectodam
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,10 +21,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,12 +37,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -47,14 +53,23 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.proyectodam.modelo.Libro
 import com.example.proyectodam.modelo.LibroViewModelFactory
 import com.example.proyectodam.modelo.MyViewModel
 import com.example.proyectodam.persistencia.DbOpenHelper
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
+fun AniadeLibros(
+    dbOpenHelper: DbOpenHelper,
+    navController: NavController,
+    myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))
+) {
     var titulo by remember { mutableStateOf(TextFieldValue()) }
     var isbn by remember { mutableStateOf(TextFieldValue()) }
     var autor by remember { mutableStateOf(TextFieldValue()) }
@@ -65,10 +80,12 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
     var idioma by remember { mutableStateOf(TextFieldValue()) }
     var resumen by remember { mutableStateOf(TextFieldValue()) }
     var fechaAdquisicion by remember { mutableStateOf(TextFieldValue()) }
-    var estanteria by remember { mutableStateOf(1) }
-    var estante by remember { mutableStateOf(1) }
+    var estanteria by remember { mutableIntStateOf(1) }
+    var estante by remember { mutableIntStateOf(1) }
     var seccion by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -77,6 +94,41 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        if (titulo.text.isNotEmpty() && selectedImageUri != null) {
+                            myViewModel.addLibro(
+                                dbOpenHelper,
+                                Libro(
+                                    titulo = titulo.text,
+                                    isbn = isbn.text,
+                                    autor = autor.text,
+                                    editorial = editorial.text,
+                                    anioPublicacion = anioPublicacion.text.toIntOrNull() ?: 0,
+                                    genero = genero.text,
+                                    numeroPaginas = numeroPaginas.text.toIntOrNull() ?: 0,
+                                    idioma = idioma.text,
+                                    resumen = resumen.text,
+                                    fechaAdquisicion = fechaAdquisicion.text,
+                                    estanteria = estanteria,
+                                    estante = estante,
+                                    seccion = seccion.firstOrNull() ?: ' ',
+                                    portada = selectedImageUri.toString()
+                                )
+                            )
+                            navController.popBackStack()
+                        } else {
+                            val message = if (titulo.text.isEmpty()) {
+                                "El título es obligatorio"
+                            } else {
+                                "Debe subir una portada"
+                            }
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    }) {
+                        Icon(Icons.Filled.Check, contentDescription = "Guardar Libro")
                     }
                 }
             )
@@ -92,7 +144,7 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
             OutlinedTextField(
                 value = titulo,
                 onValueChange = { titulo = it },
-                label = { Text("Título del libro") },
+                label = { Text("*Título del libro") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -121,6 +173,7 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                 value = anioPublicacion,
                 onValueChange = { anioPublicacion = it },
                 label = { Text("Año de Publicación") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -135,6 +188,7 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                 value = numeroPaginas,
                 onValueChange = { numeroPaginas = it },
                 label = { Text("Número de Páginas") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -145,20 +199,39 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = resumen,
-                onValueChange = { resumen = it },
-                label = { Text("Resumen") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+
+            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            var showDatePickerAdquisicion by remember { mutableStateOf(false) }
+
+            if (showDatePickerAdquisicion) {
+                val datePicker = MaterialDatePicker.Builder.datePicker()
+                    .setTitleText("Seleccione una fecha")
+                    .build()
+
+                datePicker.show((context as AppCompatActivity).supportFragmentManager, "datePicker")
+
+                datePicker.addOnPositiveButtonClickListener { dateInMillis ->
+                    val selectedDate = LocalDate.ofEpochDay(dateInMillis / (24 * 60 * 60 * 1000))
+                    fechaAdquisicion = TextFieldValue(selectedDate.format(dateFormatter))
+                    showDatePickerAdquisicion = false
+                }
+
+                datePicker.addOnDismissListener {
+                    showDatePickerAdquisicion = false
+                }
+            }
+
             OutlinedTextField(
                 value = fechaAdquisicion,
                 onValueChange = { fechaAdquisicion = it },
                 label = { Text("Fecha de Adquisición") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showDatePickerAdquisicion = true },
+                readOnly = true
             )
             Spacer(modifier = Modifier.height(16.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -205,8 +278,17 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-
-            val context = LocalContext.current
+            OutlinedTextField(
+                value = resumen,
+                onValueChange = { resumen = it },
+                label = { Text("Resumen") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                maxLines = 10,
+                singleLine = false
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.PickVisualMedia(),
                 onResult = { uri ->
@@ -216,63 +298,35 @@ fun AniadeLibros(dbOpenHelper: DbOpenHelper, navController: NavController, myVie
                     }
                 }
             )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = {
-                        singlePhotoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    }
-                ) {
-                    Text(text = "Pick photo")
+            Button(
+                onClick = {
+                    singlePhotoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+            ) {
+                Text(text = "*Elige la portada de tu libro")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 selectedImageUri?.let {
                     AsyncImage(
-                        model = it,
+                        model = ImageRequest.Builder(context)
+                            .data(it)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = null,
+                        modifier = Modifier
+                            .height(200.dp)
+                            .width(150.dp)
+                            .clip(RoundedCornerShape(8.dp)),
                         contentScale = ContentScale.Crop
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (titulo.text.isNotEmpty()) {
-                        myViewModel.addLibro(
-                            dbOpenHelper,
-                            Libro(
-                                titulo = titulo.text,
-                                isbn = isbn.text,
-                                autor = autor.text,
-                                editorial = editorial.text,
-                                anioPublicacion = anioPublicacion.text.toIntOrNull() ?: 0,
-                                genero = genero.text,
-                                numeroPaginas = numeroPaginas.text.toIntOrNull() ?: 0,
-                                idioma = idioma.text,
-                                resumen = resumen.text,
-                                fechaAdquisicion = fechaAdquisicion.text,
-                                estanteria = estanteria,
-                                estante = estante,
-                                seccion = seccion.firstOrNull() ?: ' ',
-                                portada = selectedImageUri?.toString() ?: ""
-                            )
-                        )
-                        navController.popBackStack()
-                    } else {
-                        Toast.makeText(context, "El título es obligatorio", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            ) {
-                Text(text = "Añadir Libro")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

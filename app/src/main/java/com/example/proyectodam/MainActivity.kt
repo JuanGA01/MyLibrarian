@@ -185,13 +185,13 @@ fun LibroItem(libro: Libro, onTap: (Libro) -> Unit) {
 
 @Composable
 fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
-    val borderColor = if (libro.prestado) Color.Red else Color.Green
+    val borderColor = if (libro.prestado) Color.Red else Color.White
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.6f)
-            .border(2.dp, borderColor)
+            .border(4.dp, borderColor)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = { onLongPress(libro) },
@@ -207,20 +207,35 @@ fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-        }else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .background(Color.Red)
-            ) {
-                Text(text = libro.titulo)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Autor: ${libro.autor ?: "Desconocido"}")
-            }
         }
     }
 }
+
+@Composable
+fun LibroCardPrestados(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.6f)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { onLongPress(libro) },
+                    onTap = { onTap(libro) }
+                )
+            }
+    ) {
+        if (!libro.portada.isNullOrBlank()) {
+            Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
+            AsyncImage(
+                model = libro.portada,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
 
 
 @Composable
@@ -325,7 +340,7 @@ fun LibrosPrestados(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(myViewModel.librosPrestados) { libro ->
-                    LibroCard(libro = libro,
+                    LibroCardPrestados(libro = libro,
                         onLongPress = { selectedLibro -> myViewModel.cambiarEstado(selectedLibro) },
                         onTap = { selectedLibro -> navController.navigate("CaracteristicasLibro/${selectedLibro.id}") }
                     )

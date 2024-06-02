@@ -10,6 +10,7 @@ import com.example.proyectodam.persistencia.DbOpenHelper
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.*
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import coil.compose.AsyncImage
@@ -134,6 +136,7 @@ fun CaracteristicasLibro(dbOpenHelper: DbOpenHelper, navController: NavControlle
                                 value = anioPublicacion.toString(),
                                 onValueChange = { anioPublicacion = it.toIntOrNull() ?: 0 },
                                 label = { Text("Año de publicación") },
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -148,6 +151,7 @@ fun CaracteristicasLibro(dbOpenHelper: DbOpenHelper, navController: NavControlle
                                 value = numeroPaginas.toString(),
                                 onValueChange = { numeroPaginas = it.toIntOrNull() ?: 0 },
                                 label = { Text("Número de páginas") },
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -169,6 +173,7 @@ fun CaracteristicasLibro(dbOpenHelper: DbOpenHelper, navController: NavControlle
                                 value = estanteria.toString(),
                                 onValueChange = { estanteria = it.toIntOrNull() ?: 0 },
                                 label = { Text("Estantería") },
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -176,6 +181,7 @@ fun CaracteristicasLibro(dbOpenHelper: DbOpenHelper, navController: NavControlle
                                 value = estante.toString(),
                                 onValueChange = { estante = it.toIntOrNull() ?: 0 },
                                 label = { Text("Estante") },
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(8.dp))

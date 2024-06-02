@@ -24,7 +24,7 @@ data class Libro(
     var fechaAdquisicion: String? = null,
     // La portada es un string, pues solo guardaremos la uri de donde está la imagen, para evitar duplicidades
     // evitando así el uso innecesario de memoria
-    var portada: String? = null,
+    var portada: String,
     // Una variable para que el usuario agregue notas personalizadas
     var notas: String? = null,
 )
