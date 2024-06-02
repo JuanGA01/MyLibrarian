@@ -233,7 +233,7 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
             ) {
                 items(myViewModel.libros) { libro ->
                     LibroCard(libro = libro,
-                        onLongPress = { selectedLibro -> myViewModel.marcarComoPrestado(selectedLibro) },
+                        onLongPress = { selectedLibro -> myViewModel.cambiarEstado(selectedLibro) },
                         onTap = { selectedLibro -> navController.navigate("CaracteristicasLibro/${selectedLibro.id}") }
                     )
                 }
@@ -280,7 +280,7 @@ fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, my
             ) {
                 items(myViewModel.librosPrestados) { libro ->
                     LibroCard(libro = libro,
-                        onLongPress = { selectedLibro -> /**/ },
+                        onLongPress = { selectedLibro -> myViewModel.cambiarEstado(selectedLibro) },
                         onTap = { selectedLibro -> navController.navigate("CaracteristicasLibro/${selectedLibro.id}") }
                     )
                 }
