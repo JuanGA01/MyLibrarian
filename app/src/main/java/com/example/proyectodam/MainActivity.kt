@@ -160,7 +160,6 @@ fun LibroItem(libro: Libro, onTap: (Libro) -> Unit) {
     }
 }
 
-
 @Composable
 fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
     val borderColor = if (libro.prestado) Color.Red else Color.White
@@ -214,8 +213,6 @@ fun LibroCardPrestados(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro
     }
 }
 
-
-
 @Composable
 fun HomeScreen(
     dbOpenHelper: DbOpenHelper,
@@ -224,11 +221,9 @@ fun HomeScreen(
 ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     val librosFiltrados by remember { derivedStateOf { myViewModel.librosFiltrados } }
-
     LaunchedEffect(Unit) {
         myViewModel.cargarLibros()
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -289,7 +284,6 @@ fun HomeScreen(
     }
 }
 
-
 @Composable
 fun LibrosPrestados(
     dbOpenHelper: DbOpenHelper,
@@ -297,11 +291,9 @@ fun LibrosPrestados(
     myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))
 ) {
     val librosPrestados by remember { derivedStateOf { myViewModel.librosPrestados } }
-
     LaunchedEffect(Unit) {
         myViewModel.cargarLibrosPrestados()
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -320,17 +312,13 @@ fun LibrosPrestados(
                 items(myViewModel.librosPrestados) { libro ->
                     LibroCardPrestados(libro = libro,
                         onLongPress = { selectedLibro -> myViewModel.cambiarEstado(selectedLibro) },
-                        onTap = { selectedLibro -> navController.navigate("CaracteristicasLibro/${selectedLibro.id}") }
+                        onTap = { selectedLibro -> navController.navigate("AniadeNotas/${selectedLibro.id}") }
                     )
                 }
             }
         }
     }
 }
-
-
-
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -352,14 +340,14 @@ fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
                 CaracteristicasLibro(dbOpenHelper, navController, libroId)
             }
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ProyectoDAMTheme {
-        //Main()
+        composable(
+            route = "AniadeNotas/{libroId}",
+            arguments = listOf(navArgument("libroId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val libroId = backStackEntry.arguments?.getInt("libroId")
+            if (libroId != null) {
+                AniadeNotas(dbOpenHelper, navController,libroId)
+            }
+        }
     }
 }
