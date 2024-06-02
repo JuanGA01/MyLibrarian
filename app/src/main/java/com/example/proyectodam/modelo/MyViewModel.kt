@@ -27,6 +27,7 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
         private set
     var librosFiltrados by  mutableStateOf(listOf<Libro>())
         private set
+
     init {
         cargarLibros()
         cargarLibrosPrestados()

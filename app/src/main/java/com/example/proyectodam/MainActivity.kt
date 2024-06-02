@@ -185,13 +185,12 @@ fun LibroItem(libro: Libro, onTap: (Libro) -> Unit) {
 
 @Composable
 fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
-    Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
-
     val borderColor = if (libro.prestado) Color.Red else Color.Green
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .aspectRatio(0.6f)
             .border(2.dp, borderColor)
             .pointerInput(Unit) {
                 detectTapGestures(
@@ -200,31 +199,29 @@ fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit
                 )
             }
     ) {
-        Box {
-            libro.portada?.let { uri ->
-                AsyncImage(
-                    model = uri,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+        if (!libro.portada.isNullOrBlank()) {
+            Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
+            AsyncImage(
+                model = libro.portada,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }else {
             Column(
                 modifier = Modifier
+                    .fillMaxSize()
                     .padding(16.dp)
-                    .background(Color.Transparent)
+                    .background(Color.Red)
             ) {
                 Text(text = libro.titulo)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Autor: ${libro.autor ?: "Desconocido"}")
-                libro.resumen?.let {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Resumen: $it")
-                }
             }
         }
     }
 }
+
 
 @Composable
 fun HomeScreen(
@@ -301,8 +298,12 @@ fun HomeScreen(
 
 
 @Composable
-fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
-    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+fun LibrosPrestados(
+    dbOpenHelper: DbOpenHelper,
+    navController: NavController,
+    myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))
+) {
+    val librosPrestados by remember { derivedStateOf { myViewModel.librosPrestados } }
 
     LaunchedEffect(Unit) {
         myViewModel.cargarLibrosPrestados()
@@ -312,13 +313,11 @@ fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, my
         Column(
             modifier = Modifier
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            BarraDeBusqueda(
-                query = searchQuery,
-                onQueryChange = { newQuery -> searchQuery = newQuery }
-            )
+            if (librosPrestados.isNotEmpty()) {
+            }
             Spacer(modifier = Modifier.height(16.dp))
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -335,6 +334,8 @@ fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, my
         }
     }
 }
+
+
 
 
 

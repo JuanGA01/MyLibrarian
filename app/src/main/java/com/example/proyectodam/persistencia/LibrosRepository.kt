@@ -313,14 +313,6 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
         return affectedRows > 0
     }
 
-
-
-
-
-
-
-
-
     // Función que devuelve la lista de libros encontrados por su título
     fun findByTitleSubstring(substring: String): List<Libro> {
         val db = dbOpenHelper.readableDatabase
