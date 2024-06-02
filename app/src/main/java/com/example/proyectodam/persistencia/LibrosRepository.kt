@@ -322,7 +322,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
 
 
     // Función que devuelve la lista de libros encontrados por su título
-    fun findByTitleSubstring(dbOpenHelper: SQLiteOpenHelper, substring: String): List<Libro> {
+    fun findByTitleSubstring(substring: String): List<Libro> {
         val db = dbOpenHelper.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM libros WHERE titulo LIKE ?", arrayOf("%$substring%"))
         val libros = mutableListOf<Libro>()

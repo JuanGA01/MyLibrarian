@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -39,6 +41,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -50,6 +53,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -138,8 +142,9 @@ fun TabScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BarraDeBusqueda (query: TextFieldValue, onQueryChange: (TextFieldValue) -> Unit) {
+fun BarraDeBusqueda(query: TextFieldValue, onQueryChange: (TextFieldValue) -> Unit) {
     TextField(
         value = query,
         onValueChange = onQueryChange,
@@ -156,12 +161,27 @@ fun BarraDeBusqueda (query: TextFieldValue, onQueryChange: (TextFieldValue) -> U
             .background(Color.White),
         singleLine = true,
         shape = RoundedCornerShape(8.dp),
-        colors = TextFieldDefaults.colors(
+        colors = TextFieldDefaults.textFieldColors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         )
     )
 }
+
+@Composable
+fun LibroItem(libro: Libro, onTap: (Libro) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onTap(libro) }
+            .padding(vertical = 8.dp)
+    ) {
+        Text(text = libro.titulo, modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = libro.autor ?: "Desconocido")
+    }
+}
+
 
 @Composable
 fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
@@ -207,8 +227,13 @@ fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit
 }
 
 @Composable
-fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
+fun HomeScreen(
+    dbOpenHelper: DbOpenHelper,
+    navController: NavController,
+    myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))
+) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+    val librosFiltrados by remember { derivedStateOf { myViewModel.librosFiltrados } }
 
     LaunchedEffect(Unit) {
         myViewModel.cargarLibros()
@@ -218,13 +243,34 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
         Column(
             modifier = Modifier
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             BarraDeBusqueda(
                 query = searchQuery,
-                onQueryChange = { newQuery -> searchQuery = newQuery }
+                onQueryChange = { newQuery ->
+                    searchQuery = newQuery
+                    myViewModel.cargarLibrosFiltrados(newQuery.text)
+                }
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            if (librosFiltrados.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(8.dp)
+                        .border(1.dp, Color.Gray)
+                ) {
+                    Column {
+                        librosFiltrados.forEach { libro ->
+                            LibroItem(libro = libro, onTap = {
+                                navController.navigate("CaracteristicasLibro/${libro.id}")
+                            })
+                        }
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -252,6 +298,7 @@ fun HomeScreen(dbOpenHelper: DbOpenHelper, navController: NavController, myViewM
         }
     }
 }
+
 
 @Composable
 fun LibrosPrestados(dbOpenHelper: DbOpenHelper, navController: NavController, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
