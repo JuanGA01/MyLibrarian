@@ -351,3 +351,5 @@ fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
         }
     }
 }
+//Arreglar lo de la fecha de adquisicion, no me sale
+//Lo de la lupa var medio medio, ordenar los libros alfabéticamente
