@@ -31,7 +31,7 @@ class DbOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_FILE_NAME, n
                 ")")
     }
 
-    // Al actualizar la base de datos, se elimina la tabla libros y se vuelve a crear
+    // Al actualizar la base de datos, se elimina la tabla libros y se vuelve a crea
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db!!.execSQL("DROP TABLE  libros")
         onCreate(db)
