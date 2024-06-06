@@ -10,11 +10,14 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -71,8 +74,8 @@ fun AniadeNotas(dbOpenHelper: DbOpenHelper, navController: NavController, libroI
                         .build(),
                     contentDescription = null,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .aspectRatio(0.6f)
                         .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Crop
                 )
