@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,9 +32,11 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -51,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -162,28 +166,58 @@ fun LibroItem(libro: Libro, onTap: (Libro) -> Unit) {
 
 @Composable
 fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
-    val borderColor = if (libro.prestado) Color.Red else Color.White
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(0.6f)
-            .border(4.dp, borderColor)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = { onLongPress(libro) },
-                    onTap = { onTap(libro) }
+    if (!libro.prestado){
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(0.6f)
+                .clip(RoundedCornerShape(8.dp))
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = { onLongPress(libro) },
+                        onTap = { onTap(libro) }
+                    )
+                },
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 1.dp
+            )
+        ) {
+            if (!libro.portada.isNullOrBlank()) {
+                Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
+                AsyncImage(
+                    model = libro.portada,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
-    ) {
-        if (!libro.portada.isNullOrBlank()) {
-            Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
-            AsyncImage(
-                model = libro.portada,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+        }
+    }else{
+        OutlinedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(0.6f)
+                .clip(RoundedCornerShape(8.dp))
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = { onLongPress(libro) },
+                        onTap = { onTap(libro) }
+                    )
+                },
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 1.dp
+            ),
+            border = BorderStroke(5.dp, Color.Red),
+        ) {
+            if (!libro.portada.isNullOrBlank()) {
+                Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
+                AsyncImage(
+                    model = libro.portada,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }
@@ -194,6 +228,7 @@ fun LibroCardPrestados(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.6f)
+            .clip(RoundedCornerShape(8.dp))
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = { onLongPress(libro) },
