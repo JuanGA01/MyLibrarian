@@ -1,5 +1,6 @@
 package com.example.proyectodam
 
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -59,8 +60,11 @@ import com.example.proyectodam.modelo.LibroViewModelFactory
 import com.example.proyectodam.modelo.MyViewModel
 import com.example.proyectodam.persistencia.DbOpenHelper
 import com.google.android.material.datepicker.MaterialDatePicker
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -200,37 +204,45 @@ fun AniadeLibros(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-            var showDatePickerAdquisicion by remember { mutableStateOf(false) }
 
-            if (showDatePickerAdquisicion) {
-                val datePicker = MaterialDatePicker.Builder.datePicker()
-                    .setTitleText("Seleccione una fecha")
-                    .build()
 
-                datePicker.show((context as AppCompatActivity).supportFragmentManager, "datePicker")
 
-                datePicker.addOnPositiveButtonClickListener { dateInMillis ->
-                    val selectedDate = LocalDate.ofEpochDay(dateInMillis / (24 * 60 * 60 * 1000))
-                    fechaAdquisicion = TextFieldValue(selectedDate.format(dateFormatter))
-                    showDatePickerAdquisicion = false
-                }
 
-                datePicker.addOnDismissListener {
-                    showDatePickerAdquisicion = false
-                }
+
+
+
+            val calendar = Calendar.getInstance()
+            val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            val datePickerDialog = DatePickerDialog(
+                context,
+                { _, selectedYear, selectedMonth, selectedDayOfMonth ->
+                    calendar.set(selectedYear, selectedMonth, selectedDayOfMonth)
+                    fechaAdquisicion = TextFieldValue(dateFormatter.format(calendar.time))
+                }, year, month, day
+            )
+            Button(onClick = { datePickerDialog.show() }) {
+                Text(text = "Select Date")
             }
-
             OutlinedTextField(
                 value = fechaAdquisicion,
                 onValueChange = { fechaAdquisicion = it },
                 label = { Text("Fecha de Adquisición") },
+                readOnly = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showDatePickerAdquisicion = true },
-                readOnly = true
+                    .clickable {
+                        datePickerDialog.show()
+                    }
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+
+
+
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
