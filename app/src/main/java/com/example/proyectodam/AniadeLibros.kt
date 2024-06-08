@@ -274,7 +274,7 @@ fun AniadeLibros(
                     value = estante.toString(),
                     onValueChange = {
                         val value = it.toIntOrNull() ?: 0
-                        estante = value.coerceIn(1, 10)
+                        estante = value.coerceIn(1, 20)
                     },
                     label = { Text("Estante") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
