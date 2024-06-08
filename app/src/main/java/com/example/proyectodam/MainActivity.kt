@@ -166,7 +166,7 @@ fun LibroItem(libro: Libro, onTap: (Libro) -> Unit) {
 @Composable
 fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
     //Mostraremos el libro en blanco y negro si no esta prestado
-    val colorFilter = if (!libro.prestado) {
+    val colorFilter = if (libro.prestado) {
         ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
     } else {
         null

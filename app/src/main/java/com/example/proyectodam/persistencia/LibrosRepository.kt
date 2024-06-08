@@ -10,7 +10,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
     //Función para sacar todos los libros
     fun findAll(): List<Libro> {
         val db = dbOpenHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM libros", null)
+        val cursor = db.rawQuery("SELECT * FROM libros ORDER BY titulo desc", null)
         val libros = mutableListOf<Libro>()
         try {
             if (cursor.moveToFirst()) {
@@ -62,11 +62,10 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
         return libros
     }
 
-
     // Función para sacar los libros prestados
     fun findAllPrestados(): List<Libro> {
         val db = dbOpenHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM libros WHERE prestado = 1", null)
+        val cursor = db.rawQuery("SELECT * FROM libros WHERE prestado = 1 ORDER BY titulo desc", null)
         val libros = mutableListOf<Libro>()
         try {
             val columnIndices = cursor.columnNames.mapIndexed { index, name -> name to index }.toMap()
@@ -119,7 +118,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
     // Función para sacar los libros no prestados
     fun findAllNoPrestados(): List<Libro> {
         val db = dbOpenHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM libros WHERE prestado = 0", null)
+        val cursor = db.rawQuery("SELECT * FROM libros WHERE prestado = 0 ORDER BY titulo desc", null)
         val libros = mutableListOf<Libro>()
         try {
             val columnIndices = cursor.columnNames.mapIndexed { index, name -> name to index }.toMap()
@@ -211,7 +210,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
             put("seccion", libro.seccion?.toString())
             put("portada", libro.portada)
         }
-        var newRowId: Long
+        val newRowId: Long
         try {
             newRowId = db.insert("libros", null, values)
         } finally {
@@ -274,7 +273,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
     // Función para borrar un libro por su Id, si borra el libro retorna true
     fun deleteById(id: Int): Boolean {
         val db = dbOpenHelper.writableDatabase
-        var affectedRows = 0
+        val affectedRows: Int
         try {
             affectedRows = db.delete("libros", "id = ?", arrayOf(id.toString()))
         } finally {
@@ -304,7 +303,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
             put("estante", libro.estante)
             put("seccion", libro.seccion?.toString())
         }
-        var affectedRows = 0
+        val affectedRows: Int
         try {
             affectedRows = db.update("libros", values, "id = ?", arrayOf(libro.id.toString()))
         } finally {
@@ -316,7 +315,7 @@ class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
     // Función que devuelve la lista de libros encontrados por su título
     fun findByTitleSubstring(substring: String): List<Libro> {
         val db = dbOpenHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM libros WHERE titulo LIKE ?", arrayOf("%$substring%"))
+        val cursor = db.rawQuery("SELECT * FROM libros WHERE titulo LIKE ? ORDER BY titulo desc", arrayOf("%$substring%"))
         val libros = mutableListOf<Libro>()
         try {
             val columnIndices = cursor.columnNames.mapIndexed { index, name -> name to index }.toMap()

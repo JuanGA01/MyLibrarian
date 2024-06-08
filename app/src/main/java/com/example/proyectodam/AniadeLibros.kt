@@ -74,6 +74,7 @@ fun AniadeLibros(
     navController: NavController,
     myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))
 ) {
+    // Declaración de variables para los campos del formulario utilizando estado mutable
     var titulo by remember { mutableStateOf(TextFieldValue()) }
     var isbn by remember { mutableStateOf(TextFieldValue()) }
     var autor by remember { mutableStateOf(TextFieldValue()) }
@@ -96,6 +97,8 @@ fun AniadeLibros(
     val year = calendar.get(Calendar.YEAR)
     val month = calendar.get(Calendar.MONTH)
     val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    // Variables relacionadas al DatePicker
     val datePickerDialog = DatePickerDialog(
         context,
         { _, selectedYear, selectedMonth, selectedDayOfMonth ->
@@ -103,6 +106,8 @@ fun AniadeLibros(
             fechaAdquisicion = TextFieldValue(dateFormatter.format(calendar.time))
         }, year, month, day
     )
+
+    // Fuente de interacción para mostrar el diálogo del selector de fecha al hacer clic
     val interactionSource = remember {
         object : MutableInteractionSource {
             override val interactions = MutableSharedFlow<Interaction>(
@@ -121,6 +126,7 @@ fun AniadeLibros(
         }
     }
 
+    // Estructura de la interfaz utilizando Scaffold
     Scaffold(
         topBar = {
             TopAppBar(
@@ -132,7 +138,9 @@ fun AniadeLibros(
                 },
                 actions = {
                     IconButton(onClick = {
+                        // Verificar que el título no esté vacío y que se haya seleccionado una imagen
                         if (titulo.text.isNotEmpty() && selectedImageUri != null) {
+                            // Agregar el libro utilizando el ViewModel
                             myViewModel.addLibro(
                                 dbOpenHelper,
                                 Libro(
@@ -152,8 +160,10 @@ fun AniadeLibros(
                                     portada = selectedImageUri.toString()
                                 )
                             )
+                            // Volver a la pantalla anterior
                             navController.popBackStack()
                         } else {
+                            // Mostrar mensaje de error si el título está vacío o no se ha seleccionado una imagen
                             val message = if (titulo.text.isEmpty()) {
                                 "El título es obligatorio"
                             } else {
@@ -175,6 +185,7 @@ fun AniadeLibros(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            // Campos de entrada para los detalles del libro
             OutlinedTextField(
                 value = titulo,
                 onValueChange = { titulo = it },
@@ -300,6 +311,8 @@ fun AniadeLibros(
                 singleLine = false
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Selector de imagen para la portada del libro
             val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.PickVisualMedia(),
                 onResult = { uri ->

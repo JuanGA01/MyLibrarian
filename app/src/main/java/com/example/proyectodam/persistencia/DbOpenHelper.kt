@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 const val DB_FILE_NAME = "libros"
-const val DB_VERSION = 9
+const val DB_VERSION = 10
 class DbOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_FILE_NAME, null, DB_VERSION) {
 
     // Al crear la base de datos, se crea la tabla libros
