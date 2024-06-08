@@ -9,8 +9,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -62,12 +60,9 @@ import com.example.proyectodam.modelo.Libro
 import com.example.proyectodam.modelo.LibroViewModelFactory
 import com.example.proyectodam.modelo.MyViewModel
 import com.example.proyectodam.persistencia.DbOpenHelper
-import com.google.android.material.datepicker.MaterialDatePicker
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
@@ -91,7 +86,7 @@ fun AniadeLibros(
     var fechaAdquisicion by remember { mutableStateOf(TextFieldValue()) }
     var estanteria by remember { mutableIntStateOf(1) }
     var estante by remember { mutableIntStateOf(1) }
-    var seccion by remember { mutableStateOf("") }
+    var seccion by remember { mutableStateOf("A") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     //Variables relacionadas al DatePicker
@@ -125,7 +120,6 @@ fun AniadeLibros(
             }
         }
     }
-
 
     Scaffold(
         topBar = {
