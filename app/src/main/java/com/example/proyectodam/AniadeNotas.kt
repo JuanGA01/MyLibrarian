@@ -28,12 +28,16 @@ import com.example.proyectodam.persistencia.DbOpenHelper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AniadeNotas(dbOpenHelper: DbOpenHelper, navController: NavController, libroId: Int, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))){
+    // Busca el libro en el ViewModel
     val libro = myViewModel.buscarPorId(libroId)
+    // Estado para almacenar y recordar las notas del libro
     var notas by remember { mutableStateOf(TextFieldValue(libro?.notas ?: "")) }
+    // Obtiene el contexto actual
     val context = LocalContext.current
 
     Scaffold(
         topBar = {
+            // Barra superior con título y botón de navegación para volver
             TopAppBar(
                 title = { Text("Notas del Préstamo") },
                 navigationIcon = {
@@ -42,12 +46,14 @@ fun AniadeNotas(dbOpenHelper: DbOpenHelper, navController: NavController, libroI
                     }
                 },
                 actions = {
+                    // Botón de acción para guardar las notas
                     IconButton(onClick = {
                         if (libro != null) {
                             libro.notas = notas.text
                             myViewModel.actualizarLibro(libro)
                             navController.popBackStack()
                         } else {
+                            // Muestra un mensaje si el libro no se encuentra
                             Toast.makeText(context, "No se encontró el libro", Toast.LENGTH_SHORT).show()
                         }
                     }) {
@@ -64,6 +70,7 @@ fun AniadeNotas(dbOpenHelper: DbOpenHelper, navController: NavController, libroI
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            // Muestra la imagen del libro
             libro?.let {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
@@ -80,6 +87,7 @@ fun AniadeNotas(dbOpenHelper: DbOpenHelper, navController: NavController, libroI
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
+            // Campo de texto para editar las notas del libro
             OutlinedTextField(
                 value = notas,
                 onValueChange = { notas = it },

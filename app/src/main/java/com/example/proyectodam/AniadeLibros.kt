@@ -344,7 +344,7 @@ fun AniadeLibros(
                             .build(),
                         contentDescription = null,
                         modifier = Modifier
-                            .height(200.dp)
+                            .height(240.dp)
                             .width(150.dp)
                             .clip(RoundedCornerShape(8.dp)),
                         contentScale = ContentScale.Crop
