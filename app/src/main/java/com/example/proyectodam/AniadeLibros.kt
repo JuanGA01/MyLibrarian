@@ -11,6 +11,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.Interaction
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,6 +63,8 @@ import com.example.proyectodam.modelo.LibroViewModelFactory
 import com.example.proyectodam.modelo.MyViewModel
 import com.example.proyectodam.persistencia.DbOpenHelper
 import com.google.android.material.datepicker.MaterialDatePicker
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -89,12 +94,37 @@ fun AniadeLibros(
     var seccion by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
+    //Variables relacionadas al DatePicker
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
     val year = calendar.get(Calendar.YEAR)
     val month = calendar.get(Calendar.MONTH)
     val day = calendar.get(Calendar.DAY_OF_MONTH)
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, selectedYear, selectedMonth, selectedDayOfMonth ->
+            calendar.set(selectedYear, selectedMonth, selectedDayOfMonth)
+            fechaAdquisicion = TextFieldValue(dateFormatter.format(calendar.time))
+        }, year, month, day
+    )
+    val interactionSource = remember {
+        object : MutableInteractionSource {
+            override val interactions = MutableSharedFlow<Interaction>(
+                extraBufferCapacity = 16,
+                onBufferOverflow = BufferOverflow.DROP_OLDEST,
+            )
+            override suspend fun emit(interaction: Interaction) {
+                if (interaction is PressInteraction.Release) {
+                    datePickerDialog.show()
+                }
+                interactions.emit(interaction)
+            }
+            override fun tryEmit(interaction: Interaction): Boolean {
+                return interactions.tryEmit(interaction)
+            }
+        }
+    }
 
 
     Scaffold(
@@ -209,43 +239,16 @@ fun AniadeLibros(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
-
-
-
-
-
-
-
-
-
-
-            val datePickerDialog = DatePickerDialog(
-                context,
-                { _, selectedYear, selectedMonth, selectedDayOfMonth ->
-                    calendar.set(selectedYear, selectedMonth, selectedDayOfMonth)
-                    fechaAdquisicion = TextFieldValue(dateFormatter.format(calendar.time))
-                }, year, month, day
-            )
-            Button(onClick = { datePickerDialog.show() }) {
-                Text(text = "Select Date")
-            }
             OutlinedTextField(
                 value = fechaAdquisicion,
                 onValueChange = { fechaAdquisicion = it },
                 label = { Text("Fecha de Adquisición") },
                 readOnly = true,
+                interactionSource = interactionSource,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        datePickerDialog.show()
-                    }
             )
             Spacer(modifier = Modifier.height(16.dp))
-
-
-
-
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
