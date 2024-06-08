@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -55,11 +54,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -166,58 +165,37 @@ fun LibroItem(libro: Libro, onTap: (Libro) -> Unit) {
 
 @Composable
 fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit) {
-    if (!libro.prestado){
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(0.6f)
-                .clip(RoundedCornerShape(8.dp))
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = { onLongPress(libro) },
-                        onTap = { onTap(libro) }
-                    )
-                },
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 1.dp
+    //Mostraremos el libro en blanco y negro si no esta prestado
+    val colorFilter = if (!libro.prestado) {
+        ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
+    } else {
+        null
+    }
+
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.6f)
+            .clip(RoundedCornerShape(8.dp))
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { onLongPress(libro) },
+                    onTap = { onTap(libro) }
+                )
+            },
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
+        ),
+    ) {
+        if (!libro.portada.isNullOrBlank()) {
+            Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
+            AsyncImage(
+                model = libro.portada,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                colorFilter = colorFilter,
+                modifier = Modifier.fillMaxSize()
             )
-        ) {
-            if (!libro.portada.isNullOrBlank()) {
-                Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
-                AsyncImage(
-                    model = libro.portada,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
-    }else{
-        OutlinedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(0.6f)
-                .clip(RoundedCornerShape(8.dp))
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = { onLongPress(libro) },
-                        onTap = { onTap(libro) }
-                    )
-                },
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 1.dp
-            ),
-            border = BorderStroke(5.dp, Color.Red),
-        ) {
-            if (!libro.portada.isNullOrBlank()) {
-                Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
-                AsyncImage(
-                    model = libro.portada,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
         }
     }
 }
@@ -386,5 +364,3 @@ fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
         }
     }
 }
-//Arreglar lo de la fecha de adquisicion, no me sale
-//Lo de la lupa var medio medio, ordenar los libros alfabéticamente

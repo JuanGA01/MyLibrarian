@@ -73,7 +73,8 @@ fun AniadeNotas(dbOpenHelper: DbOpenHelper, navController: NavController, libroI
                     contentDescription = null,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .aspectRatio(0.6f)
+                        .height(240.dp)
+                        .width(150.dp)
                         .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Crop
                 )
