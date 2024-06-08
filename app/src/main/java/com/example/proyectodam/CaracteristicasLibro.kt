@@ -31,12 +31,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
@@ -44,7 +47,12 @@ import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CaracteristicasLibro(dbOpenHelper: DbOpenHelper, navController: NavController, libroId: Int, myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))) {
+fun CaracteristicasLibro(
+    dbOpenHelper: DbOpenHelper,
+    navController: NavController,
+    libroId: Int,
+    myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))
+) {
     val libro = myViewModel.buscarPorId(libroId)
 
     libro?.let {
@@ -58,17 +66,35 @@ fun CaracteristicasLibro(dbOpenHelper: DbOpenHelper, navController: NavControlle
         var numeroPaginas by remember { mutableStateOf(libro.numeroPaginas ?: 0) }
         var idioma by remember { mutableStateOf(libro.idioma ?: "") }
         var fechaAdquisicion by remember { mutableStateOf(libro.fechaAdquisicion ?: "") }
-        var estanteria by remember { mutableStateOf(libro.estanteria ?: 0) }
-        var estante by remember { mutableStateOf(libro.estante ?: 0) }
-        var seccion by remember { mutableStateOf(libro.seccion ?: 'A') }
+        var estanteria by remember { mutableStateOf(libro.estanteria ) }
+        var estante by remember { mutableStateOf(libro.estante ) }
+        var seccion by remember { mutableStateOf(libro.seccion.toString()) }
 
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { Text(text = "Detalles del Libro") },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate("TabScreen") }) {
                             Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás")
+                        }
+                    },
+                    actions = {
+                        Button(
+                            onClick = {
+                                myViewModel.cambiarEstado(libro)
+                                navController.navigate("CaracteristicasLibro/${libro.id}")
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (libro.prestado) Color.Red else Color.Blue,
+                                contentColor = Color.White),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            if (libro.prestado) {
+                                Text(text = "Devolver")
+                            } else {
+                                Text(text = "Prestar")
+                            }
                         }
                     }
                 )
@@ -82,156 +108,177 @@ fun CaracteristicasLibro(dbOpenHelper: DbOpenHelper, navController: NavControlle
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            libro.portada?.let { uri ->
-                                AsyncImage(
-                                    model = uri,
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(200.dp)
-                                )
+                    libro.portada?.let { uri ->
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AsyncImage(
+                                model = uri,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                alignment = Alignment.Center,
+                                modifier = Modifier
+                                    .height(240.dp)
+                                    .width(150.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextField(
+                        value = titulo,
+                        onValueChange = { titulo = it },
+                        label = { Text("Título") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = autor,
+                        onValueChange = { autor = it },
+                        label = { Text("Autor") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = resumen,
+                        onValueChange = { resumen = it },
+                        label = { Text("Resumen") },
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 4,
+                        singleLine = false
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = isbn,
+                        onValueChange = { isbn = it },
+                        label = { Text("ISBN") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = editorial,
+                        onValueChange = { editorial = it },
+                        label = { Text("Editorial") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = anioPublicacion.toString(),
+                        onValueChange = { anioPublicacion = it.toIntOrNull() ?: 0 },
+                        label = { Text("Año de publicación") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = genero,
+                        onValueChange = { genero = it },
+                        label = { Text("Género") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = numeroPaginas.toString(),
+                        onValueChange = { numeroPaginas = it.toIntOrNull() ?: 0 },
+                        label = { Text("Número de páginas") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = idioma,
+                        onValueChange = { idioma = it },
+                        label = { Text("Idioma") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = fechaAdquisicion,
+                        onValueChange = { fechaAdquisicion = it },
+                        label = { Text("Fecha de adquisición") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = estanteria.toString(),
+                        onValueChange = { estanteria = it.toIntOrNull()?.coerceIn(1, 100) ?: 1 },
+                        label = { Text("Estantería") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = estante.toString(),
+                        onValueChange = { estante = it.toIntOrNull()?.coerceIn(1, 20) ?: 1 },
+                        label = { Text("Estante") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = seccion.toString(),
+                        onValueChange = { newValue ->
+                            if (newValue.length <= 1 && newValue.all { it.isLetter() }) {
+                                seccion = newValue.uppercase()
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            TextField(
-                                value = titulo,
-                                onValueChange = { titulo = it },
-                                label = { Text("Título") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = autor,
-                                onValueChange = { autor = it },
-                                label = { Text("Autor") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = resumen,
-                                onValueChange = { resumen = it },
-                                label = { Text("Resumen") },
-                                modifier = Modifier.fillMaxWidth(),
-                                maxLines = 4,
-                                singleLine = false
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = isbn,
-                                onValueChange = { isbn = it },
-                                label = { Text("ISBN") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = editorial,
-                                onValueChange = { editorial = it },
-                                label = { Text("Editorial") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = anioPublicacion.toString(),
-                                onValueChange = { anioPublicacion = it.toIntOrNull() ?: 0 },
-                                label = { Text("Año de publicación") },
-                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = genero,
-                                onValueChange = { genero = it },
-                                label = { Text("Género") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = numeroPaginas.toString(),
-                                onValueChange = { numeroPaginas = it.toIntOrNull() ?: 0 },
-                                label = { Text("Número de páginas") },
-                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = idioma,
-                                onValueChange = { idioma = it },
-                                label = { Text("Idioma") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = fechaAdquisicion,
-                                onValueChange = { fechaAdquisicion = it },
-                                label = { Text("Fecha de adquisición") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = estanteria.toString(),
-                                onValueChange = { estanteria = it.toIntOrNull() ?: 0 },
-                                label = { Text("Estantería") },
-                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = estante.toString(),
-                                onValueChange = { estante = it.toIntOrNull() ?: 0 },
-                                label = { Text("Estante") },
-                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextField(
-                                value = seccion.toString(),
-                                onValueChange = { seccion = it.firstOrNull() ?: 'A' },
-                                label = { Text("Sección") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Button(
-                                    onClick = {
-                                        //Actualizar libro
-                                        myViewModel.actualizarLibro(libro.copy(
-                                            titulo = titulo,
-                                            autor = autor,
-                                            resumen = resumen,
-                                            isbn = isbn,
-                                            editorial = editorial,
-                                            anioPublicacion = anioPublicacion,
-                                            genero = genero,
-                                            numeroPaginas = numeroPaginas,
-                                            idioma = idioma,
-                                            fechaAdquisicion = fechaAdquisicion,
-                                            estanteria = estanteria,
-                                            estante = estante,
-                                            seccion = seccion
-                                        ))
-                                        navController.popBackStack()
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Guardar")
-                                }
-                                Button(
-                                    onClick = {
-                                        // Eliminar libro, si se borra se vuelve al menú, si no el botón no hace nada
-                                        if (myViewModel.borrarPorId(libroId)) {
-                                            navController.popBackStack()
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Eliminar", color = Color.White)
+                        },
+                        label = { Text("Sección") },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            capitalization = KeyboardCapitalization.Characters
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { focusState ->
+                                if (!focusState.isFocused && seccion.isBlank()) {
+                                    seccion = " "
                                 }
                             }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            onClick = {
+                                // Actualizar libro
+                                myViewModel.actualizarLibro(libro.copy(
+                                    titulo = titulo,
+                                    autor = autor,
+                                    resumen = resumen,
+                                    isbn = isbn,
+                                    editorial = editorial,
+                                    anioPublicacion = anioPublicacion,
+                                    genero = genero,
+                                    numeroPaginas = numeroPaginas,
+                                    idioma = idioma,
+                                    fechaAdquisicion = fechaAdquisicion,
+                                    estanteria = estanteria,
+                                    estante = estante,
+                                    seccion = seccion.toCharArray()[0]
+                                ))
+                                navController.navigate("TabScreen")
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Green                            )
+                        ) {
+                            Text("Guardar")
+                        }
+                        Button(
+                            onClick = {
+                                // Eliminar libro, si se borra se vuelve al menú, si no el botón no hace nada
+                                if (myViewModel.borrarPorId(libroId)) {
+                                    navController.navigate("TabScreen")
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Red
+                            )
+                        ) {
+                            Text("Eliminar", color = Color.White)
                         }
                     }
                 }
@@ -244,7 +291,7 @@ fun CaracteristicasLibro(dbOpenHelper: DbOpenHelper, navController: NavControlle
                 TopAppBar(
                     title = { Text(text = "Detalles del Libro") },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navController.navigate("TabScreen") }) {
                             Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás")
                         }
                     }
