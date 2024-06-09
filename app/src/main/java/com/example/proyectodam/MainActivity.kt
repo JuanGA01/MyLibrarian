@@ -324,7 +324,7 @@ fun LibrosPrestados(
             ) {
                 items(myViewModel.librosPrestados) { libro ->
                     LibroCardPrestados(libro = libro,
-                        onLongPress = { selectedLibro -> myViewModel.cambiarEstado(selectedLibro) },
+                        onLongPress = {},
                         onTap = { selectedLibro -> navController.navigate("AniadeNotas/${selectedLibro.id}") }
                     )
                 }
