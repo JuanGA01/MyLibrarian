@@ -161,7 +161,7 @@ fun AniadeLibros(
                                 )
                             )
                             // Volver a la pantalla anterior
-                            navController.popBackStack()
+                            navController.navigate("TabScreen")
                         } else {
                             // Mostrar mensaje de error si el título está vacío o no se ha seleccionado una imagen
                             val message = if (titulo.text.isEmpty()) {
