@@ -363,7 +363,7 @@ fun CaracteristicasLibro(
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Libro no encontrado")
+                Text("Libro Borrado")
             }
         }
     }
