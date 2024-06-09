@@ -1,4 +1,4 @@
-package com.example.proyectodam
+package com.mylibrarian.proyectodam
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -69,10 +69,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.AsyncImage
-import com.example.proyectodam.modelo.Libro
-import com.example.proyectodam.modelo.LibroViewModelFactory
-import com.example.proyectodam.modelo.MyViewModel
-import com.example.proyectodam.persistencia.DbOpenHelper
+import com.mylibrarian.proyectodam.modelo.Libro
+import com.mylibrarian.proyectodam.modelo.LibroViewModelFactory
+import com.mylibrarian.proyectodam.modelo.MyViewModel
+import com.mylibrarian.proyectodam.persistencia.DbOpenHelper
 import com.example.proyectodam.ui.theme.ProyectoDAMTheme
 
 class MainActivity : ComponentActivity() {

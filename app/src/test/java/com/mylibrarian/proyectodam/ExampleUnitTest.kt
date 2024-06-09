@@ -1,4 +1,4 @@
-package com.example.proyectodam
+package com.mylibrarian.proyectodam
 
 import org.junit.Test
 

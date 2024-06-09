@@ -1,9 +1,9 @@
-package com.example.proyectodam.persistencia
+package com.mylibrarian.proyectodam.persistencia
 
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteOpenHelper
-import com.example.proyectodam.modelo.Libro
+import com.mylibrarian.proyectodam.modelo.Libro
 
 class LibrosRepository( private val dbOpenHelper: DbOpenHelper) {
 

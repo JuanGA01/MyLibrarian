@@ -1,4 +1,4 @@
-package com.example.proyectodam
+package com.mylibrarian.proyectodam
 
 import android.app.DatePickerDialog
 import android.content.Intent
@@ -56,10 +56,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.proyectodam.modelo.Libro
-import com.example.proyectodam.modelo.LibroViewModelFactory
-import com.example.proyectodam.modelo.MyViewModel
-import com.example.proyectodam.persistencia.DbOpenHelper
+import com.mylibrarian.proyectodam.modelo.Libro
+import com.mylibrarian.proyectodam.modelo.LibroViewModelFactory
+import com.mylibrarian.proyectodam.modelo.MyViewModel
+import com.mylibrarian.proyectodam.persistencia.DbOpenHelper
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.text.SimpleDateFormat

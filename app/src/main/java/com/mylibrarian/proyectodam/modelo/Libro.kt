@@ -1,4 +1,4 @@
-package com.example.proyectodam.modelo
+package com.mylibrarian.proyectodam.modelo
 
 data class Libro(
     // Identificador básico obligatorio de cada libro en nuesta app

@@ -1,11 +1,11 @@
-package com.example.proyectodam.modelo
+package com.mylibrarian.proyectodam.modelo
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.proyectodam.persistencia.DbOpenHelper
-import com.example.proyectodam.persistencia.LibrosRepository
+import com.mylibrarian.proyectodam.persistencia.DbOpenHelper
+import com.mylibrarian.proyectodam.persistencia.LibrosRepository
 import androidx.lifecycle.ViewModelProvider
 
 class LibroViewModelFactory(private val dbHelper: DbOpenHelper) : ViewModelProvider.Factory {
@@ -87,4 +87,5 @@ class MyViewModel(private val dbHelper: DbOpenHelper): ViewModel() {
     fun actualizarLibro(libro: Libro): Boolean {
         return LibrosRepository(dbHelper).updateLibro(libro)
     }
+
 }

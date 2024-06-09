@@ -1,4 +1,4 @@
-package com.example.proyectodam
+package com.mylibrarian.proyectodam
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -21,9 +21,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.proyectodam.modelo.LibroViewModelFactory
-import com.example.proyectodam.modelo.MyViewModel
-import com.example.proyectodam.persistencia.DbOpenHelper
+import com.mylibrarian.proyectodam.modelo.LibroViewModelFactory
+import com.mylibrarian.proyectodam.modelo.MyViewModel
+import com.mylibrarian.proyectodam.persistencia.DbOpenHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
