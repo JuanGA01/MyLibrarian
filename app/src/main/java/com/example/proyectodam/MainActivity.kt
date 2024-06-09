@@ -1,5 +1,6 @@
 package com.example.proyectodam
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -32,7 +33,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -75,15 +76,15 @@ import com.example.proyectodam.persistencia.DbOpenHelper
 import com.example.proyectodam.ui.theme.ProyectoDAMTheme
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ProyectoDAMTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(modifier = Modifier.fillMaxSize()) {
                     Main(
-                        modifier = Modifier.padding(innerPadding),
                         dbOpenHelper = DbOpenHelper(applicationContext)
                     )
                 }
@@ -94,7 +95,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TabScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
-    var tabIndex by remember { mutableStateOf(0) }
+    var tabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Mis Libros", "Libros Prestados")
     Column(modifier = Modifier
         .fillMaxSize()
@@ -123,7 +124,6 @@ fun TabScreen(dbOpenHelper: DbOpenHelper, navController: NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarraDeBusqueda(query: TextFieldValue, onQueryChange: (TextFieldValue) -> Unit) {
     TextField(
@@ -142,7 +142,7 @@ fun BarraDeBusqueda(query: TextFieldValue, onQueryChange: (TextFieldValue) -> Un
             .background(Color.White),
         singleLine = true,
         shape = RoundedCornerShape(8.dp),
-        colors = TextFieldDefaults.textFieldColors(
+        colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         )
@@ -187,7 +187,7 @@ fun LibroCard(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro) -> Unit
             defaultElevation = 1.dp
         ),
     ) {
-        if (!libro.portada.isNullOrBlank()) {
+        if (libro.portada.isNotBlank()) {
             Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
             AsyncImage(
                 model = libro.portada,
@@ -214,7 +214,7 @@ fun LibroCardPrestados(libro: Libro, onLongPress: (Libro) -> Unit, onTap: (Libro
                 )
             }
     ) {
-        if (!libro.portada.isNullOrBlank()) {
+        if (libro.portada.isNotBlank()) {
             Log.d(MainActivity::class.java.name, "URI: " + libro.portada)
             AsyncImage(
                 model = libro.portada,
@@ -303,7 +303,6 @@ fun LibrosPrestados(
     navController: NavController,
     myViewModel: MyViewModel = viewModel(factory = LibroViewModelFactory(dbOpenHelper))
 ) {
-    val librosPrestados by remember { derivedStateOf { myViewModel.librosPrestados } }
     LaunchedEffect(Unit) {
         myViewModel.cargarLibrosPrestados()
     }
@@ -314,8 +313,6 @@ fun LibrosPrestados(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (librosPrestados.isNotEmpty()) {
-            }
             Spacer(modifier = Modifier.height(16.dp))
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -335,7 +332,7 @@ fun LibrosPrestados(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Main(modifier: Modifier = Modifier, dbOpenHelper: DbOpenHelper) {
+fun Main(dbOpenHelper: DbOpenHelper) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "TabScreen") {
         composable("TabScreen") {
