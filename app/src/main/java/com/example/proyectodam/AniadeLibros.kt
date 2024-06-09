@@ -254,6 +254,7 @@ fun AniadeLibros(
                     .fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
+            // Selector de estantería, estante y sección
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -332,6 +333,7 @@ fun AniadeLibros(
                 Text(text = "*Elige la portada de tu libro")
             }
             Spacer(modifier = Modifier.height(16.dp))
+            //Aquí se ve la imagen en preview
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center

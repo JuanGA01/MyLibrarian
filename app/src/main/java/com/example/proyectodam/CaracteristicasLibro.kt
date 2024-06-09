@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -81,9 +82,9 @@ fun CaracteristicasLibro(
         var resumen by remember { mutableStateOf(libro.resumen ?: "") }
         var isbn by remember { mutableStateOf(libro.isbn ?: "") }
         var editorial by remember { mutableStateOf(libro.editorial ?: "") }
-        var anioPublicacion by remember { mutableStateOf(libro.anioPublicacion ?: 0) }
+        var anioPublicacion by remember { mutableIntStateOf(libro.anioPublicacion ?: 0) }
         var genero by remember { mutableStateOf(libro.genero ?: "") }
-        var numeroPaginas by remember { mutableStateOf(libro.numeroPaginas ?: 0) }
+        var numeroPaginas by remember { mutableIntStateOf(libro.numeroPaginas ?: 0) }
         var idioma by remember { mutableStateOf(libro.idioma ?: "") }
         var fechaAdquisicion by remember { mutableStateOf(libro.fechaAdquisicion ?: "") }
         var estanteria by remember { mutableStateOf(libro.estanteria) }
@@ -156,7 +157,7 @@ fun CaracteristicasLibro(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    libro.portada?.let { uri ->
+                    libro.portada.let { uri ->
                         Box(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.Center
@@ -273,7 +274,7 @@ fun CaracteristicasLibro(
                             modifier = Modifier
                                 .weight(1f)
                                 .onFocusChanged { focusState ->
-                                    if (focusState.isFocused && seccion.equals(" ")) {
+                                    if (focusState.isFocused && seccion == " ") {
                                         seccion = ""
                                     }
                                 }
@@ -295,7 +296,7 @@ fun CaracteristicasLibro(
                         Button(
                             onClick = {
                                 //Comprobamos que sección no esté vacío
-                                if (seccion.length > 0){
+                                if (seccion.isNotEmpty()){
                                     seccion.toCharArray()[0]
                                 } else{
                                     seccion = " "
